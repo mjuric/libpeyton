@@ -679,6 +679,18 @@ DiskMemoryModel::windowmap::iterator DiskMemoryModel::openwindow(long long begin
 	fileoffset -= psoffs;
 	len += psoffs;
 
+	// if this is a read only DMM, then its end can at most equat the
+	// end of the file, no matter what the DMMBlock says
+	if(openmode == O_RDONLY)
+	{
+		struct stat buf;
+		fstat(fd, &buf);
+		if(buf.st_size < fileoffset + len)
+		{
+			len = buf.st_size - fileoffset;
+		}
+	}
+
 	// it's an error if the range requested spans physical files
 	if(!(len >= end - begin))
 	{

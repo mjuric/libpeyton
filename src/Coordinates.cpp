@@ -186,7 +186,7 @@ coordinates::equecl(Radians ra, Radians dec, Radians &lambda, Radians &betha)
 // galactic north pole (alpha, delta)
 static const double angp = ctn::d2r * 192.85948;
 static const double dngp = ctn::d2r * 27.12825;
-static const double l0 = ctn::d2r * 33;
+static const double l0 = ctn::d2r * 33; // 32.93194 == WMAP number for galactic longitude of ascending node
 static const double ce = cos(dngp);
 static const double se = sin(dngp);
 

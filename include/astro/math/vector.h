@@ -265,6 +265,7 @@ typedef Vector<double, 4> V4;
 typedef Vector<int, 2> I2;
 typedef Vector<int, 3> I3;
 typedef Vector<short, 3> S3;
+typedef Vector<short, 2> S2;
 typedef Vector<unsigned, 2> U2;
 typedef Vector<unsigned, 3> U3;
 

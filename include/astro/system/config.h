@@ -40,15 +40,21 @@ var4 = To expand a key with spaces, enclose it in curly braces, eg ${key with sp
 		class Variant : public std::string
 		{
 		public:
-			operator long long() const { return atoll(c_str()); }
-			operator int() const { return atoi(c_str()); }
-			operator double() const { return atof(c_str()); }
-			operator float() const { return atof(c_str()); }
-			operator bool() const {
+			long long vlonglong() const { return atoll(c_str()); }
+			int vint() const { return atoi(c_str()); }
+			double vdouble() const { return atof(c_str()); }
+			float vfloat() const { return atof(c_str()); }
+			bool vbool() const {
 				if(*this == "true") return true;
 				if(*this == "false") return false;
 				return ((int)(*this)) != 0;
 			}
+
+			operator long long() const { return vlonglong(); }
+			operator int() const { return vint(); }
+			operator double() const { return vdouble(); }
+			operator float() const { return vfloat(); }
+			operator bool() const { return vbool(); }
 
 			Variant(const std::string &s = "") : std::string(s) {}
 		};
