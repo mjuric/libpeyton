@@ -25,6 +25,7 @@
 #include <iostream>
 #include <cstdlib>
 
+#include <unistd.h>
 #include <stdio.h>
 
 #include <astro/system/memorymap.h>

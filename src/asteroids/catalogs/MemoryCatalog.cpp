@@ -1,3 +1,9 @@
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#if defined(HAVE_FMEMOPEN)
+
 #include <astro/system/log.h>
 
 #include <stdio.h>
@@ -34,3 +40,4 @@ char *MemoryCatalog::identify(char *name) {
 	return name;
 }
 
+#endif

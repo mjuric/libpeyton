@@ -15,6 +15,12 @@
  *                                                                         *
  ***************************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#ifdef HAVE_PKG_CCfits
+
 #include <astro/io/fits.h>
 #include <astro/util.h>
 #include <astro/system/log.h>
@@ -108,3 +114,5 @@ void fits::read(std::valarray<float> &img, int &width, int &height, std::string 
 		}
 	}
 }
+
+#endif // HAVE_PKG_CCfits

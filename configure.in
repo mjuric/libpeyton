@@ -5,19 +5,28 @@ AM_INIT_AUTOMAKE(libpeyton, 0.1)
 
 LIBS="-lm"
 
+dnl AC_caolan_CHECK_PACKAGE(cfitsio, ffpss, cfitsio, fitsio.h,
+dnl    AC_MSG_RESULT([cfitsio found.]),
+dnl    AC_MSG_ERROR([cfitsio 2.4 or later NOT found]) )
+
 AC_caolan_CHECK_PACKAGE(cfitsio, ffpss, cfitsio, fitsio.h,
    AC_MSG_RESULT([cfitsio found.]),
-   AC_MSG_ERROR([cfitsio 2.4 or later NOT found]) )
+   AC_MSG_RESULT([cfitsio 2.4 or later NOT found. FITS support will be omitted.]) )
 
 AC_LANG_CPLUSPLUS
 AC_PROG_CXX
 AM_PROG_LIBTOOL
 
-dnl AC_CHECK_LIB(CCfits,main)
+AC_CHECK_FUNCS([fmemopen])
+AC_HEADER_SYS_WAIT
+
+dnl AC_caolan_CHECK_PACKAGE(CCfits, main, CCfits, CCfits,
+dnl   AC_MSG_RESULT([CCfits found.]),
+dnl   AC_MSG_ERROR([CCfits 2.4 or later NOT found]) )
 
 AC_caolan_CHECK_PACKAGE(CCfits, main, CCfits, CCfits,
    AC_MSG_RESULT([CCfits found.]),
-   AC_MSG_ERROR([CCfits 2.4 or later NOT found]) )
+   AC_MSG_RESULT([CCfits 2.4 or later NOT found. Not compiling FITS support.]) )
 
 
 AC_OUTPUT(Makefile src/Makefile include/Makefile src/asteroids/Makefile src/asteroids/catalogs/Makefile src/image/Makefile src/io/Makefile src/net/Makefile src/sdss/Makefile src/system/Makefile src/ui/Makefile)
