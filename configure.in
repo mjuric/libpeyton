@@ -3,8 +3,21 @@ AC_INIT(configure.in)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libpeyton, 0.1)
 
+LIBS="-lm"
+
+AC_caolan_CHECK_PACKAGE(cfitsio, ffpss, cfitsio, fitsio.h,
+   AC_MSG_RESULT([cfitsio found.]),
+   AC_MSG_ERROR([cfitsio 2.4 or later NOT found]) )
+
 AC_LANG_CPLUSPLUS
 AC_PROG_CXX
 AM_PROG_LIBTOOL
 
-AC_OUTPUT(Makefile src/Makefile)
+dnl AC_CHECK_LIB(CCfits,main)
+
+AC_caolan_CHECK_PACKAGE(CCfits, main, CCfits, CCfits,
+   AC_MSG_RESULT([CCfits found.]),
+   AC_MSG_ERROR([CCfits 2.4 or later NOT found]) )
+
+
+AC_OUTPUT(Makefile src/Makefile include/Makefile src/asteroids/Makefile src/asteroids/catalogs/Makefile src/image/Makefile src/io/Makefile src/net/Makefile src/sdss/Makefile src/system/Makefile)
