@@ -1,5 +1,5 @@
 //
-// $Id: file.h,v 1.1 2004/02/27 13:32:59 mjuric Exp $ 
+// $Id: file.h,v 1.2 2004/02/27 13:52:31 mjuric Exp $ 
 //  
 //  gzstream::c_file
 //  Copyright (C) 2002 Christian Holm Christensen <cholm@nbi.dk> 
@@ -20,7 +20,7 @@
 //  02111-1307 USA 
 //
 
-#include "/home/mjuric/projects/libpeyton/include/astro/io/gzstream/config.h"
+#include "./config.h"
 
 #ifndef GZSTREAM_file
 #define GZSTREAM_file
