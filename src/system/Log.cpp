@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <algorithm>
+#include <iostream>
 
 using namespace peyton::system;
 
@@ -58,4 +59,30 @@ Log::linestream::~linestream()
 std::ostringstream &Log::linestream::stream()
 {
 	return *this;
+}
+
+bool peyton::system::assert_msg_abort()
+{
+	std::cerr << "\n";
+	std::cerr << "##############################################################################\n";
+	std::cerr << "# Dump complete.\n";
+	std::cerr << "##############################################################################\n";
+	std::cerr << "\n\n\n";
+	abort();
+}
+
+bool peyton::system::assert_msg_message(const char *assertion, const char *func, const char *file, int line)
+{
+	std::cerr << "\n\n\n";
+	std::cerr << "############################## ASSERTION FAILED ##############################\n";
+	std::cerr << "# Condition : " << assertion << "\n";
+	std::cerr << "#\n";
+	std::cerr << "# Function  : " << func << "\n";
+	std::cerr << "# Source    : " << file << "\n";
+	std::cerr << "# Line      : " << line << "\n";
+	std::cerr << "##############################################################################\n";
+	std::cerr << "# Possible auxilliary information to follow:\n";
+	std::cerr << "##############################################################################\n";
+	std::cerr << "\n";
+	return true;
 }

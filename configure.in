@@ -20,4 +20,4 @@ AC_caolan_CHECK_PACKAGE(CCfits, main, CCfits, CCfits,
    AC_MSG_ERROR([CCfits 2.4 or later NOT found]) )
 
 
-AC_OUTPUT(Makefile src/Makefile include/Makefile src/asteroids/Makefile src/asteroids/catalogs/Makefile src/image/Makefile src/io/Makefile src/net/Makefile src/sdss/Makefile src/system/Makefile)
+AC_OUTPUT(Makefile src/Makefile include/Makefile src/asteroids/Makefile src/asteroids/catalogs/Makefile src/image/Makefile src/io/Makefile src/net/Makefile src/sdss/Makefile src/system/Makefile src/ui/Makefile)

@@ -173,6 +173,30 @@ public:
 		{
 			options.push_back(Option(key_, name_, shortname_, value_, argument_, defaultvalue_, description_));
 		}
+		
+	/// convenience function for specifying options which require an argument
+	void option_arg(
+		const std::string &name, 				///< key and long name of the option
+		const std::string &description = "",			///< description of this option (used to construct the Options::usage() string
+		const std::string &defaultvalue = Option::nodefault	///< the value to assign to (*this)[key] if the option is \b not specified on the command line
+		)
+		{
+			option(name, name, 0, "--", Option::required, defaultvalue, description);
+		}
+
+	/// convenience function for specifying switches (an option not requiring an argument)
+	void option_switch(
+		const std::string &name, 				///< key and long name of the option
+		const std::string &description = "",			///< description of this option (used to construct the Options::usage() string
+		const char shortname = 0,				///< short command line name of this option (eg. if your option is -u, shortname would be 'u')
+		const std::string &value = "1"				///< the value to assign to (*this)[key] if the option is specified on the command line, without arguments
+		)
+		{
+			char sn = // if name is single-character, set shortname switch as well (it's usually what you want)
+				name.size() == 1 && shortname == 0 ? 
+				sn = name[0] : shortname;
+			option(name, name, sn, value, Option::none, Option::nodefault, description);
+		}
 	/**
 		\brief describe how to parse a command line argument
 		

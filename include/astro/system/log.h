@@ -35,15 +35,24 @@ public:
 	static int level(int newlevel = -1);
 };
 
+/**
+	\brief		This function is only to be used through ASSERT() macro
+*/
+bool assert_msg_message(const char *assertion, const char *func, const char *file, int line);
+bool assert_msg_abort();
+
 }
 }
+
+#define ASSERT(cond) \
+	for(bool __nuke = !(cond); __nuke && peyton::system::assert_msg_message(#cond, __PRETTY_FUNCTION__, __FILE__, __LINE__); peyton::system::assert_msg_abort())
 
 #define DEBUG(lev, args...) { \
 	if(peyton::system::Log::level() >= peyton::system::Log::lev) { peyton::system::Log::linestream((int)peyton::system::Log::lev).stream() << args; } \
 }
 
 #define ERRCHECK(condition) if(condition)
-#define ASSERT(cond) assert(cond)
+//#define ASSERT(cond) assert(cond)
 
 //	if(!(cond)) { DEBUG(terminate, "Assertion [" #cond "] failed at " << __PRETTY_FUNCTION__ << ", " << __FILE__ << ":" << __LINE__); abort(); }
 

@@ -4,6 +4,7 @@
 #include <astro/system/log.h>
 #include <astro/exceptions.h>
 #include <sys/mman.h>
+#include <fcntl.h>
 #include <string>
 #include <iosfwd>
 
@@ -11,6 +12,7 @@
 #include <deque>
 #include <list>
 #include <vector>
+#include <iostream>
 
 namespace peyton {
 
@@ -228,6 +230,8 @@ public:
 	void close();
 
 	char *get(long long at, int len);
+
+	bool writable() { return (openmode & O_WRONLY) || (openmode & O_RDWR); } // O_* flags are defined in bits/fnctl.h
 };
 
 //#define DMMASSERT(x) x
@@ -286,6 +290,8 @@ public:
 	T &operator[](int idx)
 	{
 		DMMASSERT(idx >= 0 && idx < capacity());
+		//ASSERT(writable() || idx < size());
+		if(!(writable() || idx < size())) { std::cerr << "ASSF: " << idx << " " << size() << "\n";}
 		T &tmp = *(T *)get(tooffset(idx), sizeof(T));
 		if(idx >= dmm.size()) { dmm.setsize(idx+1); }
 		return tmp;

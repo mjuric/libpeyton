@@ -119,3 +119,8 @@
 	using namespace __peyton_image;
 	#undef __peyton_image
 #endif
+
+#ifdef __peyton_ui
+	using namespace __peyton_ui;
+	#undef __peyton_ui
+#endif

@@ -6,10 +6,13 @@
 #include <astro/exceptions.h>
 #include <iostream>
 
+#include <astro/math.h>
+#include <astro/util.h>
 #include <astro/useall.h>
 using namespace std;
 
 int main_diskmemorymodel(int argc, char *argv[]);
+int main_fpnumber(int argc, char *argv[]);
 
 #if 0
 int main(int argc, char *argv[])
@@ -38,7 +41,20 @@ int main(int argc, char *argv[])
 }
 #endif
 
+// check modulo code
+void moduloTest()
+{
+	double v[] = {-1.4, -3.8, -41, -.1, .1, 3.3, 5.7, 6, 8};
+	FOR(0, 9)
+	{
+		cerr << v[i] << " -> " << math::modulo(v[i], 3) << "\n";
+	}
+}
+
 int main(int argc, char *argv[])
 {
+	//moduloTest(); return 0;
+
+	return main_fpnumber(argc, argv);
 	return main_diskmemorymodel(argc, argv);
 }

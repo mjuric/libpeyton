@@ -26,6 +26,8 @@ namespace math {
 	/// return a random number between x0 and x1 (default range is [0, 1])
 	inline float rnd(float x0 = 0, float x1 = 1) { return x0 + (float(std::rand())/float(RAND_MAX)) * (x1 - x0); }
 
+	/// return <x> modulo <mod>
+	inline double modulo(double x, double mod) { return x - mod*std::floor(x/mod); }
 
 } // namespace math
 } // namespace peyton

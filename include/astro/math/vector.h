@@ -67,9 +67,30 @@ template<> struct Dtraits<4> { typedef int dim_must_be_4; };
 	\param op Operator
 */
 #define VECSCAT(T, op) \
-	Vector operator op (T f) const         { Vector v(*this); FOR(0, D) { v[i] op##= f; }; return v; } \
 	Vector &operator op##=(T f) { FOR(0, D) { val[i] op##= f; }; return *this; }
 #define VECSCA(op) VECSCAT(T, op)
+
+/**
+	\brief Define 'inherited' element-wise operator between a Vector<> and arbitrary scalar type when used in binary form (helper macro)
+
+	\param op Operator
+*/
+#define VECSCABIN(op) \
+	template<typename T, unsigned D> \
+	Vector<T, D> operator op(const Vector<T, D> &vv, const T &s) \
+	{ Vector<T, D> v; FOR(0, D) { v[i] = vv[i] op s; }; return v; } \
+	\
+	template<typename T, unsigned D> \
+	Vector<T, D> operator op(const T &s, const Vector<T, D> &vv) \
+	{ Vector<T, D> v; FOR(0, D) { v[i] = s op vv[i]; }; return v; }
+// #define VECSCABIN(op) \
+// 	template<typename T, unsigned D, typename S> \
+// 	Vector<T, D> operator op(const Vector<T, D> &vv, const S &s) \
+// 	{ Vector<T, D> v; FOR(0, D) { v[i] = vv[i] op s; }; return v; } \
+// 	\
+// 	template<typename T, unsigned D, typename S> \
+// 	Vector<T, D> operator op(const S &s, const Vector<T, D> &vv) \
+// 	{ Vector<T, D> v; FOR(0, D) { v[i] = s op vv[i]; }; return v; }
 
 /**
 	\brief Define 'inherited' element-wise operator between two Vector<> classes (helper macro)
@@ -108,10 +129,12 @@ template<> struct Dtraits<4> { typedef int dim_must_be_4; };
 	
 	\param fun	Function name
 	\param ns	Namespace
+	\param T2	Type of the second parameter
+	\param i2	Indexer of the second parameter (eg, [i] if it's a vector, or nothing if it's a scalar)
 */
-#define VECFUN2NS(fun, ns) \
-	template<typename T, unsigned D> inline Vector<T, D> fun(const Vector<T, D> &a, const Vector<T, D> &b) \
-	{ Vector<T, D> r; FOR(0, D) { r[i] = ns::fun(a[i], b[i]); }; return r; }
+#define VECFUN2NS(fun, ns, T2, i2) \
+	template<typename T, unsigned D> inline Vector<T, D> fun(const Vector<T, D> &a, T2 b) \
+	{ Vector<T, D> r; FOR(0, D) { r[i] = ns::fun(a[i], b i2); }; return r; }
 
 template<typename T, unsigned D> class Box;
 
@@ -213,6 +236,7 @@ public:
 	T rho() const { DIM(3); return sqrt(sqr(x)+sqr(y)); }
 
 	T theta() const { DIM(3); return acos(z / abs(*this)); }
+	T lat() const { DIM(3); return peyton::ctn::pi/2. - theta(); }
 
 	// 4D
 	Vector(const T a, const T b, const T c, const T d) { DIM(4); set(a, b, c, d); }
@@ -222,6 +246,7 @@ public:
 // mathematical vector operations
 template<typename T, unsigned D> inline double abs(const Vector<T, D> &a) { return sqrt(double(dot(a, a))); }
 template<typename T, unsigned D> inline T dot(const Vector<T, D> &a, const Vector<T, D> &b) { T sum = 0; FOR(0, D) { sum += a[i]*b[i]; }; return sum; }
+template<typename T, unsigned D> inline T sum(const Vector<T, D> &a) { T sum = 0; FOR(0, D) { sum += a[i]; }; return sum; }
 
 // cross product
 template<typename T> inline Vector<T, 3> cross(const Vector<T, 3> &a, const Vector<T, 3> &b)
@@ -229,12 +254,25 @@ template<typename T> inline Vector<T, 3> cross(const Vector<T, 3> &a, const Vect
 	return Vector<T, 3>(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
 }
 
+// standard binary memberwise operations
+VECSCABIN(+); VECSCABIN(-); VECSCABIN(*); VECSCABIN(/); VECSCABIN(>>);
+
 // memberwise function application
 VECFUNNS(round, );	// global namespace (TODO: check if round is in std namespace)
 VECFUNNS(ceil, );		// global namespace
 VECFUNNS(floor, );	// global namespace
-VECFUN2NS(min, std);
-VECFUN2NS(max, std);
+VECFUN2NS(pow, std, T, );
+#define VTD	const Vector<T, D> &
+VECFUN2NS(min, std, VTD, [i]);
+VECFUN2NS(max, std, VTD, [i]);
+#undef VTD
+
+// statistical template functions
+template<typename T>
+void rand(T &v, double a, double b)	///< generate a vector of random numbers ranging from a to b
+{
+	FOREACH(v) { *i = a + (b - a) * (float(rand())/RAND_MAX); }
+}
 
 #endif
 
