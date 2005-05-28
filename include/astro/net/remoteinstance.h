@@ -50,7 +50,7 @@ public:
 template<typename T, typename cont = std::vector<T *> >
 class ptr_bag : public cont {
 public:
-	~ptr_bag() { for(typename cont::iterator i = begin(); i != end(); i++) { delete *i; } }
+	~ptr_bag() { for(typename cont::iterator i = cont::begin(); i != cont::end(); i++) { delete *i; } }
 };
 
 class ServerInstance : public Instance {

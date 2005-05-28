@@ -67,7 +67,7 @@ template<> struct Dtraits<4> { typedef int dim_must_be_4; };
 	\param op Operator
 */
 #define VECSCAT(T, op) \
-	Vector &operator op##=(T f) { FOR(0, D) { val[i] op##= f; }; return *this; }
+	Vector &operator op##=(T f) { FOR(0, D) { this->val[i] op##= f; }; return *this; }
 #define VECSCA(op) VECSCAT(T, op)
 
 /**
@@ -99,7 +99,7 @@ template<> struct Dtraits<4> { typedef int dim_must_be_4; };
 */
 #define VECVEC(op) \
 	Vector operator op(const Vector &a) const { Vector v(*this); FOR(0, D) { v.val[i] op##= a.val[i]; }; return v; } \
-	Vector &operator op##=(const Vector &a) { FOR(0, D) { val[i] op##= a.val[i]; }; return *this; }
+	Vector &operator op##=(const Vector &a) { FOR(0, D) { this->val[i] op##= a.val[i]; }; return *this; }
 
 /**
 	\brief Define 'inherited' elementwise unary function (helper macro)
@@ -177,17 +177,17 @@ public:
 	VECSCA(+); VECSCA(-); VECSCA(*); VECSCA(/); VECSCAT(unsigned, >>);
 	VECVEC(+); VECVEC(-); VECVEC(*); VECVEC(/);
 
-	Vector &operator=(const Vector &a)  { FOR(0, D) { val[i] = a.val[i]; }; return *this; }
-	Vector &operator=(const T &a)       { FOR(0, D) { val[i] = a; };        return *this; }
+	Vector &operator=(const Vector &a)  { FOR(0, D) { this->val[i] = a.val[i]; }; return *this; }
+	Vector &operator=(const T &a)       { FOR(0, D) { this->val[i] = a; };        return *this; }
 
 	Vector operator-() const { Vector v(*this); FOR(0, D) { v[i] = -v[i]; }; return v; }
 
-	bool operator==(const Vector &v) const { FOR(0, D) { if(v[i] != val[i]) return false; }; return true; }
+	bool operator==(const Vector &v) const { FOR(0, D) { if(v[i] != this->val[i]) return false; }; return true; }
 	bool operator!=(const Vector &v) const { return !((*this) == v); }
 
 	// member access
-	T& operator[](int i) { ASSERT(i >= 0 && i < D); return val[i]; }
-	const T operator[](int i) const { ASSERT(i >= 0 && i < D); return val[i]; }
+	T& operator[](int i) { ASSERT(i >= 0 && i < D); return this->val[i]; }
+	const T operator[](int i) const { ASSERT(i >= 0 && i < D); return this->val[i]; }
 
 	// geometry
 	/// project vector \c *this along vector \c a
@@ -196,30 +196,30 @@ public:
 	// vector -> vector asignment
 	template<typename TT, unsigned DD>
 	void set(const Vector<TT, DD> &v) {
-		FOR(0, std::min(D, DD)) { val[i] = (T) v[i]; }
-		FOR(std::min(D, DD), D) { val[i] = (T) 0; }
+		FOR(0, std::min(D, DD)) { this->val[i] = (T) v[i]; }
+		FOR(std::min(D, DD), D) { this->val[i] = (T) 0; }
 	}
 
 	// STL-style iterators and functions
 	static inline unsigned size() { return D; }
-	T* begin() { return val; }
-	T* end() { return val+D; }
-	const T* begin() const { return val; }
-	const T* end() const { return val+D; }
+	T* begin() { return this->val; }
+	T* end() { return this->val+D; }
+	const T* begin() const { return this->val; }
+	const T* end() const { return this->val+D; }
 
 	// specializations for frequently used dimensions
-	T phi() const { return atan2(y, x); }
+	T phi() const { return atan2(this->y, this->x); }
 
 	// 2D
 	Vector(const T a, const T b) { DIM(2); set(a, b); }
 
-	void set(T a, T b) { DIM(2); val[0] = a; val[1] = b; }
+	void set(T a, T b) { DIM(2); this->val[0] = a; this->val[1] = b; }
 	void polar(double r, double phi) { DIM(2); set(r * cos(phi), r * sin(phi)); }
 
 	// 3D
 	Vector(const T a, const T b, const T c) { DIM(3); set(a, b, c); }
 
-	void set(T a, T b, T c) { DIM(3); val[0] = a; val[1] = b; val[2] = c; }
+	void set(T a, T b, T c) { DIM(3); this->val[0] = a; this->val[1] = b; this->val[2] = c; }
 	void spherical(T r, T theta, T phi) { DIM(3);
 		const double rxy = sin(theta) * r;
 		set(rxy * cos(phi), rxy * sin(phi), r * cos(theta));
@@ -233,14 +233,14 @@ public:
 	}
 
 	// 3D cylindrical radius
-	T rho() const { DIM(3); return sqrt(sqr(x)+sqr(y)); }
+	T rho() const { DIM(3); return sqrt(sqr(this->x)+sqr(this->y)); }
 
-	T theta() const { DIM(3); return acos(z / abs(*this)); }
+	T theta() const { DIM(3); return acos(this->z / abs(*this)); }
 	T lat() const { DIM(3); return peyton::ctn::pi/2. - theta(); }
 
 	// 4D
 	Vector(const T a, const T b, const T c, const T d) { DIM(4); set(a, b, c, d); }
-	void set(T a, T b, T c, T d) { DIM(4); val[0] = a; val[1] = b; val[2] = c; val[3] = d; }
+	void set(T a, T b, T c, T d) { DIM(4); this->val[0] = a; this->val[1] = b; this->val[2] = c; this->val[3] = d; }
 };
 
 // mathematical vector operations
@@ -271,7 +271,7 @@ VECFUN2NS(max, std, VTD, [i]);
 template<typename T>
 void rand(T &v, double a, double b)	///< generate a vector of random numbers ranging from a to b
 {
-	FOREACH(v) { *i = a + (b - a) * (float(rand())/RAND_MAX); }
+	FOREACH(v) { *i = a + (b - a) * (float(std::rand())/RAND_MAX); }
 }
 
 #endif

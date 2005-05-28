@@ -27,12 +27,13 @@
 #include <astro/io/gzstream/fstream.h>
 
 #include <string>
-#include <CCfits>
+#include <CCfits/CCfits>
 #include <memory>
 #include <unistd.h>
 
 using namespace peyton::exceptions;
 using namespace peyton::io;
+using namespace CCfits;
 
 void fits::write(peyton::image::Image &img, std::string file)
 {

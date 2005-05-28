@@ -24,7 +24,7 @@ dnl AC_caolan_CHECK_PACKAGE(CCfits, main, CCfits, CCfits,
 dnl   AC_MSG_RESULT([CCfits found.]),
 dnl   AC_MSG_ERROR([CCfits 2.4 or later NOT found]) )
 
-AC_caolan_CHECK_PACKAGE(CCfits, main, CCfits, CCfits,
+AC_caolan_CHECK_PACKAGE(CCfits, main, CCfits, CCfits/CCfits,
    AC_MSG_RESULT([CCfits found.]),
    AC_MSG_RESULT([CCfits 2.4 or later NOT found. Not compiling FITS support.]) )
 

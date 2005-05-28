@@ -1,6 +1,8 @@
 #ifndef _astro_types_h
 #define _astro_types_h
 
+#include <cmath>
+
 /**
 	\file
 	

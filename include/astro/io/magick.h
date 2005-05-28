@@ -121,7 +121,7 @@ namespace magick {
 			double lv = log(double(v));
 
 			if( v > 10) {
-			cerr << v << " " << lv << " " << (lv - minn) / range << " " << minn << " " << maxx << " " << range << "\n";
+			std::cerr << v << " " << lv << " " << (lv - minn) / range << " " << minn << " " << maxx << " " << range << "\n";
 			}
 
 			return RGB((lv - minn) / range);

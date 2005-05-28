@@ -172,14 +172,14 @@ public:
 	CoordinateIterator(V min, V max, V step) : b(min), t(max), s(step), V(min) { }
 	CoordinateIterator &operator++() {
 		V last = *this;
-		FOR(0, dim()) {
-			if(val[i] += s[i] < t[i]) return *this;
-			val[i] = b[i];
+		FOR(0, V::dim()) {
+			if(this->val[i] += s[i] < t[i]) return *this;
+			this->val[i] = b[i];
 		}
 		*this = last;
 		return *this;
 	}
-	operator bool() { return val[dim()-1] < t[dim()-1]; }
+	operator bool() { return this->val[V::dim()-1] < t[V::dim()-1]; }
 };
 
 #define FORIMAGEr(img, i, j, i0, i1, j0, j1) \
