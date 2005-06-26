@@ -4,6 +4,9 @@
 #define FOREACHj(i_, x) for(typeof((x).begin()) i_ = (x).begin(); i_ != (x).end(); ++i_)
 #define FOREACH(x) FOREACHj(i, x)
 
+#define REVEACHj(i_, x) for(typeof((x).rbegin()) i_ = (x).rbegin(); i_ != (x).rend(); ++i_)
+#define REVEACH(x) REVEACHj(i, x)
+
 #define FORj(i, i0, i1) for(int i = i0; i != i1; ++i)
 #define FOR(i0, i1) FORj(i, i0, i1)
 
