@@ -44,12 +44,17 @@ bool assert_msg_abort();
 }
 }
 
+#if defined(__GNUG__) || defined (__INTEL_COMPILER)
 #define ASSERT(cond) \
 	for(bool __nuke = !(cond); __nuke && peyton::system::assert_msg_message(#cond, __PRETTY_FUNCTION__, __FILE__, __LINE__); peyton::system::assert_msg_abort())
+#else
+#define ASSERT(cond) \
+	for(bool __nuke = !(cond); __nuke && peyton::system::assert_msg_message(#cond, "<function_name_unsupported>"_, __FILE__, __LINE__); peyton::system::assert_msg_abort())
+#endif
 
-#define DEBUG(lev, args...) { \
-	if(peyton::system::Log::level() >= peyton::system::Log::lev) { peyton::system::Log::linestream((int)peyton::system::Log::lev).stream() << args; } \
-}
+#define DEBUG(lev) \
+	if(peyton::system::Log::level() >= peyton::system::Log::lev) \
+		peyton::system::Log::linestream((int)peyton::system::Log::lev).stream()
 
 #define ERRCHECK(condition) if(condition)
 //#define ASSERT(cond) assert(cond)

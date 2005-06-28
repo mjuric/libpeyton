@@ -224,7 +224,7 @@ int main_diskmemorymodel(int argc, char *argv[])
 		// test writability & iterators
 		int n = 0;
 		a.open("rw");
-		FOREACH(a)
+		FOREACH(DMMArray<myobject>, a)
 		{
 			myobject &o = *i;
 			myobject mo = { n, 5, 5, 2, 3, 4 };
@@ -282,7 +282,7 @@ int main_diskmemorymodel(int argc, char *argv[])
 
 		// verify
 		cout << "Verifying\n";
-		FOREACH(offsets)
+		FOREACH(vector<int>::iterator, offsets)
 		{
 			int i0 = *i;
 			for(int i = i0; i != i0 + l; i++)

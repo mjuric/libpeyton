@@ -10,13 +10,13 @@ using namespace peyton::asteroids;
 
 bool MPCCatalog::openCatalog(const char *filename, const char *mode) {
 	fp = fopen(filename, "rb");
-	if(fp == NULL) { DEBUG(basic, "Error opening catalog"); return false; }
+	if(fp == NULL) { DEBUG(basic) << "Error opening catalog"; return false; }
 
 	fseek(fp, 0, SEEK_END);
 	int size = ftell(fp);
 	if(size % MPCCatalog::recordByteLen != 0) {
 		fclose(fp); fp = NULL;
-		DEBUG(basic, "Size of catalog not a multiple of record length");
+		DEBUG(basic) << "Size of catalog not a multiple of record length";
 		return false;
 	}
 
@@ -27,7 +27,7 @@ bool MPCCatalog::openCatalog(const char *filename, const char *mode) {
 
 int MPCCatalog::write(Asteroid &obj, int at)
 {
-	DEBUG(basic, "Not implemented yet !");
+	DEBUG(basic) << "Not implemented yet !";
 	return -1;
 }
 
@@ -39,7 +39,7 @@ char *MPCCatalog::identify(char *name) {
 
 int MPCCatalog::read(Asteroid &obj, const char *name)
 {
-	DEBUG(basic, "Not implemented yet !");
+	DEBUG(basic) << "Not implemented yet !";
 	return -1;
 }
 
@@ -67,7 +67,7 @@ int MPCCatalog::read(Asteroid &obj, const int id)
 		);
 
 	if(ret != 14) {
-		DEBUG(basic, "Error reading asteroid record");
+		DEBUG(basic) << "Error reading asteroid record";
 		return -1;
 	}
 

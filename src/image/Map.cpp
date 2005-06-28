@@ -42,7 +42,7 @@ void Poly::push_back(V2 v)
 
 void Poly::deintegerize()
 {
-	FOREACHj(v, vs) {
+	FOREACHj(Vertices::iterator, v, vs) {
 		if((*v).x == rint((*v).x)) {
 			double w = xmax - xmin;
 			(*v).x += epsilon * w;
@@ -54,7 +54,7 @@ void Poly::deintegerize()
 Poly Poly::unflip()
 {
 	Poly p;
-	FOREACHj(v, vs) { p.push_back(V2(-(*v).y, (*v).x)); }
+	FOREACHj(Vertices::iterator, v, vs) { p.push_back(V2(-(*v).y, (*v).x)); }
 	return p;
 }
 
@@ -94,7 +94,7 @@ inline Poly Poly::cutMyself()
 {
 	// calculate y bounds
 	Poly out;
-	FOREACHj(vit, vs) { out.push_back(flip(v)); }
+	FOREACHj(Vertices::iterator, vit, vs) { out.push_back(flip(v)); }
 	vs.clear();
 	return out;
 }
@@ -115,7 +115,7 @@ Poly Poly::cutflip(int x)
 	// check for degenerate single-V2 ending cases
 	if(ea == NULL && eb == NULL) {
 		char tmp[1000];
-//		DEBUG(verbose, "Single V2 ending in poly [" << *this << "]");
+//		DEBUG(verbose) << "Single V2 ending in poly [" << *this << "]";
 		return cutMyself();
 	}
 
@@ -146,7 +146,7 @@ Poly Poly::cutflip(int x)
 void processPoly(Poly &base)
 {
 
-	DEBUG(verbose, "input base : " << base << "\n");
+	DEBUG(verbose) << "input base : " << base << "\n";
 
 	int i, j;
 	double mass = 0;
@@ -154,8 +154,8 @@ void processPoly(Poly &base)
 	base.deintegerize();
 	for(i = (int)base.xmin + 1; !base.vs.empty(); i++) {
 		Poly left = base.cutflip(i);
-		DEBUG(verbose, "--- i = " << i);
-		DEBUG(verbose, "left  : " << left.unflip());
+		DEBUG(verbose) << "--- i = " << i;
+		DEBUG(verbose) << "left  : " << left.unflip();
 //		cout << "base  : " << base << "\n";
 //		cout << "ranges : " << left.xmin << "," << left.xmax << "\n";
 		sx += left.area();
@@ -163,15 +163,15 @@ void processPoly(Poly &base)
 		left.deintegerize();
 		for(j = (int)left.xmin + 1; !left.vs.empty(); j++) {
 			Poly bottom = left.cutflip(j);
-			DEBUG(verbose, "   ---- j = " << j << "\n");
-			DEBUG(verbose, "   bottom : " << bottom.unflip().unflip() << "\n");
-			DEBUG(verbose, "   base   : " << left << "\n");
+			DEBUG(verbose) << "   ---- j = " << j << "\n";
+			DEBUG(verbose) << "   bottom : " << bottom.unflip().unflip() << "\n";
+			DEBUG(verbose) << "   base   : " << left << "\n";
 //			mass += rho(i, j) * bottom.area();
 			sy += bottom.area();
 		}
-		DEBUG(verbose, "   mass : " << sy << "\n");
+		DEBUG(verbose) << "   mass : " << sy << "\n";
 	}
-	DEBUG(verbose, "   mass : " << sx);
+	DEBUG(verbose) << "   mass : " << sx;
 }
 
 #ifdef __TRANSFORM_TEST

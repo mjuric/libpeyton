@@ -58,7 +58,8 @@ protected:
 	void startListening();
 public:
 	int port;
-	std::list<RemoteInstance *> clients;
+	typedef std::list<RemoteInstance *> clients_t;
+	clients_t clients;
 public:
 	ServerInstance(const char *localhost = NULL);
 	virtual ~ServerInstance();
@@ -107,12 +108,12 @@ int main_aux(int argc, char **argv) {
 		Instance *ins; char server[1000];
 
 		if(Instance::isClient(server, argc, argv)) {
-			DEBUG(basic, "Starting client");
+			DEBUG(basic) << "Starting client";
 			Client *cli = new Client;
 			cli->bindToServer(server);
 			ins = cli;
 		} else {
-			DEBUG(basic, "Starting server");
+			DEBUG(basic) << "Starting server";
 			ins = new Server;
 		}
 		ins->setArguments(argc, argv);

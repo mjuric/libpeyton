@@ -37,7 +37,7 @@ using namespace CCfits;
 
 void fits::write(peyton::image::Image &img, std::string file)
 {
-	DEBUG(verbose, "io::fits: Writing [" << file << "] ...");
+	DEBUG(verbose) << "io::fits: Writing [" << file << "] ...";
 
 	long naxis = 2;
 	long naxes[2] = { img.width(), img.height() };
@@ -54,7 +54,7 @@ void fits::write(peyton::image::Image &img, std::string file)
 	std::valarray<double> data((double *)img, img.size());
 	pFits->pHDU().write(1, img.size(), data);
 
-	DEBUG(verbose, "io::fits: ... done");
+	DEBUG(verbose) << "io::fits: ... done";
 	
 //	std::cout << pFits->pHDU() << std::endl;
 }
@@ -62,7 +62,7 @@ void fits::write(peyton::image::Image &img, std::string file)
 void fits::write(std::valarray<float> &img, int width, int height, std::string file,
 	const keywords *kwords)
 {
-	DEBUG(verbose, "io::fits: Writing [" << file << "] ...");
+	DEBUG(verbose) << "io::fits: Writing [" << file << "] ...";
 
 	long naxis = 2;
 	long naxes[2] = { width, height };
@@ -80,10 +80,10 @@ void fits::write(std::valarray<float> &img, int width, int height, std::string f
 
 	if(kwords)
 	{
-		FOREACH(*kwords) { pFits->pHDU().addKey((*i).first, (*i).second.first, (*i).second.second); }
+		FOREACH(keywords::const_iterator, *kwords) { pFits->pHDU().addKey((*i).first, (*i).second.first, (*i).second.second); }
 	}
 
-	DEBUG(verbose, "io::fits: ... done");
+	DEBUG(verbose) << "io::fits: ... done";
 
 //	std::cout << pFits->pHDU() << std::endl;
 }
@@ -108,7 +108,8 @@ void fits::read(std::valarray<float> &img, int &width, int &height, std::string 
 	if(kwords)
 	{
 		std::string v;
-		FOREACH(image.keyWord())
+		typedef std::map< string, Keyword *> sK_t;
+		FOREACH(sK_t::iterator, image.keyWord())
 		{
 			Keyword &kw = *(*i).second;
 			(*kwords)[kw.name()] = make_pair(kw.value(v), kw.comment());

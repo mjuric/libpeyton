@@ -16,7 +16,7 @@ bool NativeCatalog::initialize(size_t size)
 {
 	if(size % recordByteLen != 0) {
 		fclose(fp); fp = NULL;
-		DEBUG(basic, "Size of catalog not a multiple of record length");
+		DEBUG(basic) << "Size of catalog not a multiple of record length";
 		return false;
 	}
 
@@ -36,7 +36,7 @@ bool NativeCatalog::openCatalog(const char *filename, const char *mode)
 	if(!strcmp(mode, "r")) {
 		// read mode
 		fp = fopen(filename, "rb");
-		if(fp == NULL) { DEBUG(basic, "Error opening catalog"); return false; }
+		if(fp == NULL) { DEBUG(basic) << "Error opening catalog"; return false; }
 
 		fseek(fp, 0, SEEK_END);
 		size_t size = ftell(fp);
@@ -45,7 +45,7 @@ bool NativeCatalog::openCatalog(const char *filename, const char *mode)
 	} else if(!strcmp(mode, "w")) {
 		// write mode
 		fp = fopen(filename, "wb");
-		if(fp == NULL) { DEBUG(basic, "Error opening catalog"); return false; }
+		if(fp == NULL) { DEBUG(basic) << "Error opening catalog"; return false; }
 	}
 	
 	return true;

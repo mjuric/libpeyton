@@ -78,8 +78,8 @@ RunGeometryDB::RunGeometryDB()
 #endif
 
 	if(access(runlist.c_str(), 04)) {
-		DEBUG(terminate, "Cannot access run geometry file " << runlist);
-		DEBUG(terminate, "Is the 'runlist file' entry in " << EnvVar("CONF_SDSS") << " file incorrect?");
+		DEBUG(terminate) << "Cannot access run geometry file " << runlist;
+		DEBUG(terminate) << "Is the 'runlist file' entry in " << EnvVar("CONF_SDSS") << " file incorrect?";
 		exit(-1);
 	}
 

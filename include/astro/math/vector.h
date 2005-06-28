@@ -108,7 +108,7 @@ template<> struct Dtraits<4> { typedef int dim_must_be_4; };
 */
 #define VECFUN(fun) \
 	template<typename T, unsigned D> \
-	Vector<T,D> fun(Vector<T, D> v) { FOREACH(v) { *i = fun(*i); }; return v; }
+	Vector<T,D> fun(Vector<T, D> v) { typedef Vector<T, D> V; FOREACH(V, v) { *i = fun(*i); }; return v; }
 
 /**
 	\brief Define 'inherited' elementwise unary function which is in a namespace (helper macro)
@@ -120,7 +120,7 @@ template<> struct Dtraits<4> { typedef int dim_must_be_4; };
 */
 #define VECFUNNS(fun, ns) \
 	template<typename T, unsigned D> \
-	Vector<T,D> fun(Vector<T, D> v) { FOREACH(v) { *i = ns::fun(*i); }; return v; }
+	Vector<T,D> fun(Vector<T, D> v) { typename Vector<T, D>::iterator i; for(i=v.begin(); i != v.end(); i++) { *i = ns::fun(*i); }; return v; }
 
 /**
 	\brief Define 'inherited' elementwise binary function which is in a namespace (helper macro)
@@ -168,6 +168,7 @@ class Vector : public VectorStorage<T, D> {
 public:
 	typedef Vector<T, D> type;
 	typedef T content_type;
+	typedef T* iterator;
 public:
 	Vector() {}
 	explicit Vector(const T a) { *this = a; }
@@ -271,19 +272,23 @@ VECFUN2NS(max, std, VTD, [i]);
 template<typename T>
 void rand(T &v, double a, double b)	///< generate a vector of random numbers ranging from a to b
 {
-	FOREACH(v) { *i = a + (b - a) * (float(std::rand())/RAND_MAX); }
+	typedef typename T::iterator it;
+	for(it i = v.begin(); i != v.end(); i++) { *i = a + (b - a) * (float(std::rand())/RAND_MAX); }
 }
 
 #endif
 
 // output operators
-template<typename T, unsigned D> OSTREAM(const Vector<T, D> &v)
+template<typename T, unsigned D>
+std::ostream &operator <<(std::ostream &out, const Vector<T, D> &v)
 {
 	out << '[';
 	FOR(0, D-1) { out << v[i] << ","; }
 	return out << v[D-1] << ']';
 }
-template<typename T, unsigned D> ISTREAM(Vector<T, D> &v)
+
+template<typename T, unsigned D>
+std::istream &operator >>(std::istream &in, Vector<T, D> &v)
 {
 	char c;
 	in >> c;

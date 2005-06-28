@@ -1,11 +1,11 @@
 #ifndef _astro_util_h
 #define _astro_util_h
 
-#define FOREACHj(i_, x) for(typeof((x).begin()) i_ = (x).begin(); i_ != (x).end(); ++i_)
-#define FOREACH(x) FOREACHj(i, x)
+#define FOREACHj(C, i_, x) for(C i_ = (x).begin(); i_ != (x).end(); ++i_)
+#define FOREACH(C, x) FOREACHj(C, i, x)
 
-#define REVEACHj(i_, x) for(typeof((x).rbegin()) i_ = (x).rbegin(); i_ != (x).rend(); ++i_)
-#define REVEACH(x) REVEACHj(i, x)
+#define REVEACHj(C, i_, x) for(C i_ = (x).rbegin(); i_ != (x).rend(); ++i_)
+#define REVEACH(C, x) REVEACHj(C, i, x)
 
 #define FORj(i, i0, i1) for(int i = i0; i != i1; ++i)
 #define FOR(i0, i1) FORj(i, i0, i1)
@@ -13,8 +13,8 @@
 #define REVj(i, i0, i1) for(int i = i0; i != i1; --i)
 #define REV(i0, i1) REVj(i, i0, i1)
 
-#define OSTREAM(T...) std::ostream &operator <<(std::ostream &out, T)
-#define ISTREAM(T...) std::istream &operator >>(std::istream &in, T)
+#define OSTREAM(T) std::ostream &operator <<(std::ostream &out, T)
+#define ISTREAM(T) std::istream &operator >>(std::istream &in, T)
 
 #include <astro/types.h>
 #include <astro/constants.h>
@@ -50,9 +50,9 @@ namespace util {
 	std::string unescape(const std::string &str);
 
 	/// convert string to lowercase
-	inline std::string tolower(const std::string &s) { std::string o(s); FOREACH(o) { *i = ::tolower(*i); }; return o; }
+	inline std::string tolower(const std::string &s) { std::string o(s); FOREACH(std::string::iterator, o) { *i = ::tolower(*i); }; return o; }
 	/// convert string to uppercase
-	inline std::string toupper(const std::string &s) { std::string o(s); FOREACH(o) { *i = ::toupper(*i); }; return o; }
+	inline std::string toupper(const std::string &s) { std::string o(s); FOREACH(std::string::iterator, o) { *i = ::toupper(*i); }; return o; }
 
 	/// convert size_t to std::string
 	inline std::string str(size_t n) { char buf[20]; sprintf(buf, "%d", n); return buf; }

@@ -175,7 +175,8 @@ bool util::expand_dict(std::map<std::string, std::string> &h)
 	//std::cout << "\n\nexpanding variables\n";
 
 	std::map<std::string, bool> expanded;
-	FOREACH(h)
+	typedef std::map<std::string, std::string> m_t;
+	FOREACH(m_t::iterator, h)
 	{
 		if(!expanded.count((*i).first))
 		{

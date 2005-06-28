@@ -18,7 +18,7 @@ Preferences::Preferences()
 	sprintf(buf, "%s/lib/%s", ws, "prefs.txt");
 
 	if(access(buf, 04)) {
-		DEBUG(terminate, "Cannot access preferences file " << buf << " (SDSSAST_WORKSPACE environment variable incorrect ?)");
+		DEBUG(terminate) << "Cannot access preferences file " << buf << " (SDSSAST_WORKSPACE environment variable incorrect ?)";
 		exit(-1);
 	}
 
@@ -45,7 +45,7 @@ Preferences::Preferences()
 		} else if(!stricmp(type, "string")) {
 			m = val;
 		} else {
-			DEBUG(basic, "Unknown type in preferences file");
+			DEBUG(basic) << "Unknown type in preferences file";
 		}
 	}
 }

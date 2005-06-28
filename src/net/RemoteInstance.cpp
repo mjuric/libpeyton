@@ -37,7 +37,7 @@ ServerInstance::ServerInstance(const char *l)
 ServerInstance::~ServerInstance()
 {
 	Log::debug(Log::verbose, "Deleting ServerInstance [in destructor]");
-	FOREACHj(cli, clients) {
+	FOREACHj(clients_t::iterator, cli, clients) {
 		(*cli)->server = NULL;
 		delete *cli;
 	}
@@ -52,7 +52,7 @@ RemoteInstance::~RemoteInstance()
 {
 	Log::debug(Log::verbose, "Deleting RemoteInstance [in destructor]");
 	if(server != NULL) {
-		typeof(server->clients.begin()) i = find(server->clients.begin(), server->clients.end(), this);
+		ServerInstance::clients_t::iterator i = find(server->clients.begin(), server->clients.end(), this);
 		if(i != server->clients.end()) {
 			server->clients.erase(i);
 		}
@@ -73,7 +73,7 @@ int ServerInstance::waitFor(std::vector<RemoteInstance *> &signaled, const
 	}
 
 	int fdmax = -1;
-	FOREACH(clients) {
+	for(clients_t::const_iterator i = clients.begin(); i != clients.end(); i++) {
 		if(!(*i)->isConnected()) continue;
 
 		int fd = (*i)->link.fd();
@@ -89,7 +89,7 @@ int ServerInstance::waitFor(std::vector<RemoteInstance *> &signaled, const
 	case -1: THROW(ESocket, "Error in ::select while waiting for clients to communicate");
 	}
 
-	FOREACH(clients) {
+	for(clients_t::const_iterator i = clients.begin(); i != clients.end(); i++) {
 		int fd = (*i)->link.fd();
 		if(!FD_ISSET(fd, &set)) continue;
 
@@ -147,7 +147,7 @@ bool ServerInstance::spawnFlock(string flockName, string exe, vector<pair<string
 		try {
 			FOR(0, ninstances) {
 				n++;
-				DEBUG(verbose, "Starting up flock member: " << host << " [" << i << " currently running]");
+				DEBUG(verbose) << "Starting up flock member: " << host << " [" << i << " currently running]";
 				spawn(exe.c_str(), host.c_str());
 			}
 		} catch(EAny &e) {

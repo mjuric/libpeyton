@@ -47,7 +47,14 @@ public:
 	Poly unflip();
 };
 
-inline std::ostream &operator <<(std::ostream &o, const Poly &p) { FOREACHj(v, p.vs) o << *v << " "; o << '[' << p.area() << ']'; return o; }
+inline std::ostream &operator <<(std::ostream &o, const Poly &p)
+{
+	for(Vertices::const_iterator v = p.vs.begin(); v != p.vs.end(); v++)
+	{
+		o << *v << " "; o << '[' << p.area() << ']';
+	}
+	return o;
+}
 
 template<typename T, typename MapSpecification>
 T mapPixel(peyton::math::V2 pixel[4], MapSpecification &ms)
@@ -123,7 +130,7 @@ ImageBase<T> &mapTransform(
 	out.setOrigin(minn);
 	out.setScale(dx);
 
-	DEBUG(verbose, "map [ size = " << size << ", origin = " << minn << ", scale = " << dx << " ]");
+	DEBUG(verbose) << "map [ size = " << size << ", origin = " << minn << ", scale = " << dx << " ]";
 
 	double offset[4][2] = { {0, 0}, {dx, 0}, {dx, dx}, {0, dx} };
 

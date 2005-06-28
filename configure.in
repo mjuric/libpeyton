@@ -1,7 +1,7 @@
 AC_INIT(configure.in)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(libpeyton, 0.1)
+AM_INIT_AUTOMAKE(libpeyton, 0.2)
 
 LIBS="-lm"
 
@@ -17,6 +17,11 @@ AC_LANG_CPLUSPLUS
 AC_PROG_CXX
 AM_PROG_LIBTOOL
 
+# hacks to recognize Portland Group compiler
+#
+if test "${CXX}" == pgCC; then
+        CXXFLAGS="$CXXFLAGS -D__PGCC__"
+fi
 AC_CHECK_FUNCS([fmemopen])
 AC_HEADER_SYS_WAIT
 

@@ -13,13 +13,13 @@ using namespace peyton::asteroids;
 
 bool BowellCatalog::openCatalog(const char *filename, const char *mode) {
 	fp = fopen(filename, "rb");
-	if(fp == NULL) { DEBUG(basic, "Error opening catalog"); return false; }
+	if(fp == NULL) { DEBUG(basic) << "Error opening catalog"; return false; }
 
 	fseek(fp, 0, SEEK_END);
 	int size = ftell(fp);
 	if(size % BowellCatalog::recordByteLen != 0) {
 		fclose(fp); fp = NULL;
-		DEBUG(basic, "Size of catalog not a multiple of record length");
+		DEBUG(basic) << "Size of catalog not a multiple of record length";
 		return false;
 	}
 
@@ -70,7 +70,7 @@ int BowellCatalog::read(Asteroid &obj, const int id)
 		);
 
 	if(ret != 14) {
-		DEBUG(basic, "Error reading asteroid record");
+		DEBUG(basic) << "Error reading asteroid record";
 		return -1;
 	}
 

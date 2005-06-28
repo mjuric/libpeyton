@@ -86,7 +86,8 @@ void Options::get(int argc, char **argv, Opt *op)
 	}
 	opts.push_back(Opt(NULL, 0, false, 0));
 
-//	FOREACH(short2long) { cout << (*i).first << " -> " << (*i).second << "\n"; }
+//	typedef std::map<char, int> s2l_t;
+//	FOREACH(s2l_t, short2long) { cout << (*i).first << " -> " << (*i).second << "\n"; }
 
 	int index = -1;
 	char c;

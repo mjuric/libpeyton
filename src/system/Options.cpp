@@ -59,7 +59,7 @@ void Options::parse(int argc, char **argv)
 	std::string optstring("-");
 
 	std::vector<getopt_option> opts;
-	FOREACH(options) {
+	FOREACH(std::vector<Option>::iterator, options) {
 		const Option &o = *i;
 
 		if(o.key == "") { THROW(peyton::exceptions::EOptions, "Option key cannot be an empty string"); }
@@ -87,7 +87,7 @@ void Options::parse(int argc, char **argv)
 	static struct option null_option = { NULL, 0, false, 0};
 	opts.push_back(null_option);
 
-	FOREACH(args) {
+	FOREACH(std::vector<Option>::iterator, args) {
 		const Option &o = *i;
 		
 		if(o.hasdefaultvalue)
@@ -161,7 +161,7 @@ std::string Options::usage(char **argv)
 	if(!args.empty()) {
 		out << "Usage : ";
 		out  << program << " ";
-		FOREACH(args) {
+		FOREACH(std::vector<Option>::iterator, args) {
 			Option &o = *i;
 
 			if(i != args.begin())              { out << " "; }
@@ -170,7 +170,7 @@ std::string Options::usage(char **argv)
 			else                               { out << "[" + o.key << "]"; }
 		}
 		out << "\n\n";
-		FOREACH(args) {
+		FOREACH(std::vector<Option>::iterator, args) {
 			Option &o = *i;
 			out << "      - " << o.key << " -- " << o.description << "\n";
 		}
@@ -179,7 +179,7 @@ std::string Options::usage(char **argv)
 
 	if(options.size() > 11) { // taking into account negative number argument hack
 		out << "Options available:\n\n";
-		FOREACH(options) {
+		FOREACH(std::vector<Option>::iterator, options) {
 			Option &o = *i;
 			if(o.shortname == '.' || (o.shortname >= '0' && o.shortname <= '9')) continue;
 			out << "\t--" << o.name;

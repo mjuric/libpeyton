@@ -133,7 +133,8 @@ protected:
 
 	bool dirty;
 public:
-	std::map<long long, DMMBlock> blocks;
+	typedef std::map<long long, DMMBlock> blocks_t;
+	blocks_t blocks;
 protected:
 	DMMBlock &autoaddblock(long long idx, DMMBlock *before, DMMBlock *after);
 	void closefilehandles();

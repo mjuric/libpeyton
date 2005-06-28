@@ -23,13 +23,13 @@ bool MemoryCatalog::openCatalog(const char *filename, const char *mode)
 	if(!strcmp(mode, "r")) {
 		// read mode
 		fp = fmemopen(cat->first, cat->second, "rb");
-		if(fp == NULL) { DEBUG(basic, "Error opening memory catalog"); return false; }
+		if(fp == NULL) { DEBUG(basic) << "Error opening memory catalog"; return false; }
 
 		return initialize(cat->second);
 	} else if(!strcmp(mode, "w")) {
 		// write mode -- TODO: this should use open_memstream?
 		fp = fmemopen(cat->first, cat->second, "wb");
-		if(fp == NULL) { DEBUG(basic, "Error opening catalog"); return false; }
+		if(fp == NULL) { DEBUG(basic) << "Error opening catalog"; return false; }
 	}
 
 	return true;
