@@ -3,6 +3,7 @@
 #include <astro/exceptions.h>
 
 #include <cstdlib>
+#include <sys/wait.h>
 
 using namespace std;
 using namespace peyton::util;

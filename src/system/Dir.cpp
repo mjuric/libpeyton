@@ -15,9 +15,13 @@ dir::dir(const std::string &path)
 	{
 		switch(err) {
 		case GLOB_NOSPACE: 	THROW(EIOException, string("Ran out of memory while reading [") + path + "]");
-		case GLOB_ABORTED: 	THROW(EIOException, string("Error reading [") + path + "]");
+		case GLOB_ABEND: 	THROW(EIOException, string("Error reading [") + path + "]");
+#ifndef __CYGWIN__
 		case GLOB_NOMATCH: 	return;
 		default: 		THROW(EIOException, string("Unknown error while reading [") + path + "]");
+#else
+		default: return;
+#endif
 		}
 	}
 	

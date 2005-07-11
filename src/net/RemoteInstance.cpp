@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <getopt.h>
 #include <unistd.h>
+#include <sys/time.h>
 
 using namespace std;
 using namespace peyton;
