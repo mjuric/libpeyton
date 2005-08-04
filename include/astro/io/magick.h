@@ -215,7 +215,7 @@ namespace magick {
 		IdentityFilter idf;
 		if(transfer == NULL) { transfer = &idt; }
 
-		DEBUG(verbose, "Writing output image to [ " << filename << " ]");
+		DEBUG(verbose) << "Writing output image to [ " << filename << " ]";
 
 		Magick::Pixels view(image);
 		int cols = image.columns();

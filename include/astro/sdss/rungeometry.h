@@ -29,7 +29,8 @@ namespace sdss {
 	protected:
 		peyton::system::Config conf;
 	public:
-		std::map<int, RunGeometry> db;
+		typedef std::map<int, RunGeometry> db_t;
+		db_t db;
 	public:
 		RunGeometryDB();
 		void getGeometry(int run, RunGeometry &geom) { geom = getGeometry(run); }

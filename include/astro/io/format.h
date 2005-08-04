@@ -95,9 +95,11 @@ public:
 
 class Formatter
 {
+protected:
+	std::ostream *out;	///< Stream to output to
+	std::string buf;	///< Temporary buffer, flushed to the stream when stream() is called
 public:
 	std::string formatt;	///< Format string
-	std::ostream &out;	///< Stream to output to
 	bool sstrm;		///< Internal flag - true if out is an owned (allocated) ostringstream
 public:
 	int	at,		///< Current location in the format string
@@ -120,7 +122,7 @@ public:
 		
 		If the stream should automatically rewind (see rewind()), set \a autorewind_ to true.
 	*/
-	Formatter(std::ostream &out_, const std::string &fmt, bool autorewind_ = true)
+	Formatter(std::ostream *out_, const std::string &fmt, bool autorewind_ = true)
 	: formatt(fmt), out(out_), sstrm(false), at(0), to(0), autorewind(autorewind_)
 	{
 		pop();
@@ -133,7 +135,7 @@ public:
 		the object has no private stringstream. Should not be used directly, but
 		through the <code>std::string = format("blabla %d %d") << a << b;</code> idiom.
 	*/
-	operator std::string() const;
+	operator std::string();
 
 	/**
 		\brief Returns the currently relevant piece of format.
@@ -143,7 +145,16 @@ public:
 	*/
 	std::string front() { return formatt.substr(at, to-at); }
 
+	/**
+		\brief Changes the stream to which this Formatter streams its output
+		
+		\return Returns the old output stream, NULL if there was no output stream
+			or the internal string stream stream was used.
+	*/
+	std::ostream *set_output_stream(std::ostream *s);
+
 	void pop();
+	std::ostream &stream();
 	bool empty() { return at == to; }
 	void rewind() { at = 0; to = 0; pop(); }
 };
@@ -155,7 +166,7 @@ typedef bits::auto_ptr<Formatter> PFormatter;
 //
 inline PFormatter operator <<(std::ostream &out, const format &fmt)
 {
-	return PFormatter(new Formatter(out, fmt, fmt.autorewind));
+	return PFormatter(new Formatter(&out, fmt, fmt.autorewind));
 }
 
 template<typename T>
@@ -190,7 +201,7 @@ Formatter &operator <<(Formatter &f, const T &x)
 {
 	if(f.empty()) {
 		if(f.autorewind) { f.rewind(); }
-		if(f.empty()) { f.out << x; return f; }
+		if(f.empty()) { f.stream() << x; return f; }
 	}
 
 	format_type(f, x);
@@ -217,7 +228,7 @@ inline void format_type(Formatter &f, const T &v)
 				 + f.front() + "]. This is not allowed - define a format_type() specialization for your type first");
 	}
 
-	f.out << v;
+	f.stream() << v;
 }
 
 //
@@ -232,6 +243,7 @@ void format_type(Formatter &f, const char &x);
 void format_type(Formatter &f, const bool &x);
 void format_type(Formatter &f, const char *x);
 
+inline void format_type(Formatter &f, char *x) { format_type(f, (const char *)x); }
 inline void format_type(Formatter &f, const std::string &x) { format_type(f, x.c_str()); }
 inline void format_type(Formatter &f, const float &x)       { format_type(f, (double)x); }
 inline void format_type(Formatter &f, const char &x)        { format_type(f, (int)x); }

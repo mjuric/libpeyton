@@ -18,7 +18,7 @@ using namespace peyton::exceptions;
 using namespace std;
 
 Formatter::Formatter(const std::string &fmt, bool arw)
-: formatt(fmt), out(*(new ostringstream)), sstrm(true), at(0), to(0), autorewind(arw)
+: formatt(fmt), out(new ostringstream), sstrm(true), at(0), to(0), autorewind(arw)
 {
 	pop();
 }
@@ -26,16 +26,16 @@ Formatter::Formatter(const std::string &fmt, bool arw)
 Formatter::~Formatter()
 {
 	if(sstrm) {
-		ostringstream *s = (ostringstream *)&out;
+		ostringstream *s = (ostringstream *)&stream();
 		delete s;
 	}
 }
 
-Formatter::operator std::string() const
+Formatter::operator std::string()
 {
 	if(!sstrm)	return "";
 
-	ostringstream *s = (ostringstream *)&out;
+	ostringstream *s = (ostringstream *)&stream();
 	return s->str();
 }
 
@@ -47,10 +47,10 @@ void Formatter::pop()
 //		cerr << "<<at=" << at << ",to=" << to << ">>";
 		
 		while(to != formatt.size() && formatt[to] != '%') { ++to; }
-		out << formatt.substr(at, to - at);
+		buf += formatt.substr(at, to - at);
 		at = to;
 
-		if(to == formatt.size()) { break; }
+		if(to == formatt.size()) { stream(); break; }
 		++to;
 //		cerr << "----" << formatt[to] << "----";
 
@@ -127,6 +127,27 @@ void Formatter::pop()
 	// if a good format string found - it's located in [at, to) range in 'formatt'
 }
 
+ostream *Formatter::set_output_stream(ostream *s)
+{
+	if(sstrm) {
+		ostringstream *s = (ostringstream *)&stream();
+		delete s;
+		s = NULL;
+		sstrm = false;
+	}
+
+	ostream *old = out;
+	out = s;
+	
+	return old;
+}
+
+std::ostream &Formatter::stream()
+{
+	if(buf.size()) { *out << buf; buf.clear(); }
+	return *out;
+}
+
 static string int_formats("di");
 static string unsigned_formats("ouxX");
 static string double_formats("eEfFgGaA");
@@ -138,7 +159,7 @@ void peyton::io::format_type(Formatter &f, const int &x)
 	if(int_formats.find(f.tf.conversion) != string::npos)
 	{
 		asprintf(&c, f.front().c_str(), x);
-		f.out << c;
+		f.stream() << c;
 		free(c);
 	}
 	else
@@ -153,7 +174,7 @@ void peyton::io::format_type(Formatter &f, const unsigned &x)
 	if(unsigned_formats.find(f.tf.conversion) != string::npos)
 	{
 		asprintf(&c, f.front().c_str(), x);
-		f.out << c;
+		f.stream() << c;
 		free(c);
 	}
 	else
@@ -168,7 +189,7 @@ void peyton::io::format_type(Formatter &f, const double &x)
 	if(double_formats.find(f.tf.conversion) != string::npos)
 	{
 		asprintf(&c, f.front().c_str(), x);
-		f.out << c;
+		f.stream() << c;
 		free(c);
 	}
 	else
@@ -183,7 +204,7 @@ void peyton::io::format_type(Formatter &f, const char *x)
 	if(string_formats.find(f.tf.conversion) != string::npos)
 	{
 		asprintf(&c, f.front().c_str(), x);
-		f.out << c;
+		f.stream() << c;
 		free(c);
 	}
 	else
