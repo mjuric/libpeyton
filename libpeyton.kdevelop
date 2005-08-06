@@ -40,7 +40,7 @@
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevg77options</f77compiler>
         <cxxflags>-O2 -g3 -Wstrict-aliasing</cxxflags>
-        <configargs>--enable-debug=full --with-CCfits=/usr/local --with-CCfits-include=/usr/local/include/CCfits --prefix=/home/mjuric/projects/libpeyton/workspace</configargs>
+        <configargs>--enable-debug=full --prefix=/home/mjuric/projects/libpeyton/workspace</configargs>
         <topsourcedir/>
         <cppflags/>
         <ldflags/>
@@ -49,9 +49,10 @@
         <f77compilerbinary/>
         <cflags/>
         <f77flags/>
+        <envvars/>
       </optimized>
       <debug>
-        <configargs>--enable-debug=full --with-CCfits=/usr/local --with-CCfits-include=/usr/local/include/CCfits</configargs>
+        <configargs>--enable-debug=full --without-CCfits</configargs>
         <builddir>debug</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
