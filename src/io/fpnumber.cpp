@@ -134,12 +134,12 @@ public:
 	iostate(fpnumber::format f_ = format(12, 2), int fmt_ = 0)
 		: out(NULL), f(f_), fmtflags(fmt_), ptr(0), putptr(-1), unit(8*sizeof(unsigned))
 	{
-		memset(bitbuffer, 0, sizeof(bitbuffer));
+		for(int i = 0; i != sizeof(bitbuffer); i++) { bitbuffer[i] = 0; }
 	}
 	iostate(const iostate &cpy)
 		: out(NULL), f(cpy.f), fmtflags(cpy.fmtflags), ptr(0), putptr(-1), unit(8*sizeof(unsigned))
 	{
-		memset(bitbuffer, 0, sizeof(bitbuffer));
+		for(int i = 0; i != sizeof(bitbuffer); i++) { bitbuffer[i] = 0; }
 	}
 	void flush();
 public:

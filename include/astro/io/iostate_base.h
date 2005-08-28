@@ -46,6 +46,8 @@ namespace io {
 	template <typename Derived>
 	class iostate_base
 	{
+	protected:
+		typedef Derived * PDerived;
 	public:
 		/**
 			\brief Returns the instance of the derived class, bound to the given stream
@@ -77,7 +79,7 @@ int iostate_base<Derived>::xalloc_idx;
 template <typename Derived>
 void iostate_base<Derived>::callback(std::ios_base::event ev, std::ios_base& obj, int index)
 {
-	Derived *s = (Derived *)obj.pword(index);
+	Derived *s = static_cast<Derived *>(obj.pword(index));
 
 	switch(ev)
 	{
@@ -96,8 +98,8 @@ Derived &iostate_base<Derived>::get_iostate(std::ios &stream)
 {
 	if(xalloc_idx == -1) { xalloc_idx = std::ios_base::xalloc(); }
 
-	Derived *&s = (Derived *&)stream.pword(xalloc_idx);
-	if(s) { return *s; }
+	PDerived &s = (PDerived &)(stream.pword(xalloc_idx));
+	if(s != NULL) { return *s; }
 
 	s = new Derived;
 	stream.register_callback(Derived::callback, xalloc_idx);
@@ -109,7 +111,7 @@ template <typename Derived>
 Derived *iostate_base<Derived>::copyfmt()
 {
 	// by default, just call the copy-constructor
-	return new Derived((Derived &)*this);
+	return new Derived(static_cast<Derived &>(*this));
 }
 
 }
