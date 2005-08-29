@@ -11,6 +11,7 @@
 #include <astro/useall.h>
 using namespace std;
 
+int demo_binarystream();
 int main_diskmemorymodel(int argc, char *argv[]);
 int main_fpnumber(int argc, char *argv[]);
 
@@ -55,6 +56,7 @@ int main(int argc, char *argv[])
 {
 	//moduloTest(); return 0;
 
+	return demo_binarystream();
 	return main_fpnumber(argc, argv);
 	return main_diskmemorymodel(argc, argv);
 }
