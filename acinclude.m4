@@ -20,7 +20,7 @@ dnl Extract the path name from a --with-boost=PATH argument
   )
 
   if test "x$BOOST_ROOT" = x ; then
-    BOOST_ROOT="/usr"
+    BOOST_ROOT="/usr/local"
   fi
 
   boost_min_version=ifelse([$1], ,1.20.0,[$1])
@@ -264,6 +264,49 @@ AC_DEFUN([RS_BOOST_PROGRAM_OPTIONS],
     AC_LANG_RESTORE
 ])
 
+dnl RS_BOOST_IOSTREAMS([ACTION-IF-FOUND], [ACTION-IF-NOT-FOUND])
+dnl Test for the Boost iostreams library
+dnl Defines
+dnl   BOOST_LDFLAGS to the set of flags required to compile boost_iostreams
+AC_DEFUN([RS_BOOST_IOSTREAMS], 
+[
+    AC_REQUIRE([RS_BOOST])
+  AC_MSG_CHECKING([whether we can use boost_iostreams library])
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  OLD_CPPFLAGS="$CPPFLAGS"
+  CPPFLAGS="$BOOST_CPPFLAGS"
+  OLD_LIBS="$LIBS"
+  LIBS="-lboost_iostreams-$boost_libsuff"
+    AC_TRY_COMPILE(
+	    [ 
+		#include <boost/iostreams/device/file.hpp> 
+	    ],
+	    [
+		using namespace boost::iostreams;
+		file_sink fs("bla.bin");
+		return 0;
+	    ], 
+	    [
+		AC_MSG_RESULT([yes])
+		ifelse([$1], , :, [$1])
+	    ],
+	    [ 
+		AC_MSG_RESULT([no])
+		ifelse([$2], , :, [$2])
+	    ])
+
+    AC_SUBST(BOOST_CPPFLAGS)
+    AC_SUBST(BOOST_LIBS)
+    AC_SUBST(BOOST_LIBS_R)
+    BOOST_CPPFLAGS="$CPPFLAGS"
+    BOOST_LIBS="$LIBS $BOOST_LIBS"
+    BOOST_LIBS_R="$LIBS $BOOST_LIBS_R"
+    CPPFLAGS="$OLD_CPPFLAGS"
+    LIBS="$OLD_LIBS"
+    AC_LANG_RESTORE
+])
+
 dnl @synopsis AC_caolan_CHECK_PACKAGE(PACKAGE, FUNCTION, LIBRARY , HEADERFILE [, ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]])
 dnl
 dnl Provides --with-PACKAGE, --with-PACKAGE-include and --with-PACKAGE-libdir
@@ -281,7 +324,7 @@ dnl HAVE_PKG_PACKAGE is replaced with the actual first parameter passed)
 dnl note that autoheader will complain of not having the HAVE_PKG_PACKAGE and you 
 dnl will have to add it to acconfig.h manually
 dnl
-dnl @version $Id: acinclude.m4,v 1.2 2005/08/29 00:27:00 mjuric Exp $
+dnl @version $Id: acinclude.m4,v 1.3 2005/08/29 02:33:11 mjuric Exp $
 dnl @author Caolan McNamara <caolan@skynet.ie>
 dnl
 dnl with fixes from...

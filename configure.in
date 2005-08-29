@@ -26,6 +26,15 @@ AC_caolan_CHECK_PACKAGE(CCfits, main, CCfits, CCfits/CCfits,
    AC_MSG_RESULT([CCfits found.]),
    AC_MSG_RESULT([CCfits 2.4 or later NOT found. Not compiling FITS support.]) )
 
-RS_BOOST([1.33.0],[],[AC_MSG_ERROR([Package requires the Boost C++ libraries!])])
+RS_BOOST([1.33.0],
+	[
+	  CXXFLAGS="$CXXFLAGS $BOOST_CPPFLAGS"
+	],[
+	  AC_MSG_ERROR([Package requires the Boost C++ libraries!])
+	])
+RS_BOOST_IOSTREAMS(
+	[],[
+	  AC_MSG_ERROR([Boost.Iostreams are required but not found.])
+	])
 
 AC_OUTPUT(Makefile src/Makefile include/Makefile src/asteroids/Makefile src/asteroids/catalogs/Makefile src/image/Makefile src/io/Makefile src/net/Makefile src/sdss/Makefile src/system/Makefile src/ui/Makefile)
