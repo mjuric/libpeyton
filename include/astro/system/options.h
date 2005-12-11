@@ -59,6 +59,108 @@ struct Version
 };
 #define VERSION_DATETIME(ver) Version ver(std::string(__DATE__) + " " + __TIME__)
 
+class Option;
+namespace opt
+{
+	struct base
+	{
+		std::string val;
+		int priority;
+
+		base(const std::string &s, int pri) : val(s), priority(pri) {}
+		virtual void apply(Option &o) const = 0;
+	};
+
+	struct shortname : public base
+	{
+		// implies name = shortname (=> before name)
+		// implies key = shortname (=> before key)
+		// implies value = shortname (=> before value,name)
+		shortname(const char c) : base(c == 0 ? std::string() : std::string(1, c), 10) {}
+		virtual void apply(Option &o) const;
+	};
+
+	struct name : public base
+	{
+		// implies key = name (=> before key)
+		// implies value = name (=> before value)
+		name(const std::string &s) : base(s, 20) {}
+		virtual void apply(Option &o) const;
+	};
+
+	struct binding : public base
+	{
+		union {
+			double *v_double;
+			float *v_float;
+			int *v_int;
+			short *v_short;
+			bool *v_bool;
+			std::string *v_string;
+		} var;
+		enum { unbound, t_double, t_float, t_int, t_short, t_bool, t_string } type;
+		bool showdefault;
+		#define CS(ty) binding(ty &v, bool sdef = true) : base("", 25), type(t_##ty), showdefault(sdef) { var.v_##ty = &v; }
+		#define CSN(ns, ty) binding(ns::ty &v, bool sdef = true) : base("", 25), type(t_##ty), showdefault(sdef) { var.v_##ty = &v; }
+		CS(double) CS(float) CS(short) CS(bool) CSN(std, string)
+
+		binding() : type(unbound), base("", 25), showdefault(false) {}
+		binding(const binding &b) : base("", 25), var(b.var), type(b.type), showdefault(b.showdefault) {}
+
+		bool bound() { return type != unbound; }
+		void clear() { type = unbound; }
+		bool hasdefaultvalue() { return showdefault; }
+
+		virtual void apply(Option &o) const;
+		void setvalue(const std::string &s);
+		std::string to_string() const;
+	};
+
+	struct key : public base
+	{
+		key(const std::string &s) : base(s, 30) {}
+		virtual void apply(Option &o) const;
+	};
+
+	struct value : public base
+	{
+		value(const std::string &s) : base(s, 30) {}
+		virtual void apply(Option &o) const;
+	};
+
+	struct def_value : public base
+	{
+		def_value(const std::string &s) : base(s, 30) {}
+		virtual void apply(Option &o) const;
+	};
+
+	struct desc : public base
+	{
+		desc(const std::string &s) : base(s, 30) {}
+		virtual void apply(Option &o) const;
+	};
+
+	struct arg : public base
+	{
+		arg(const std::string &s);
+		virtual void apply(Option &o) const;
+	};
+
+	struct empty_tag : public base
+	{
+		empty_tag() : base("", 100) {}
+		virtual void apply(Option &o) const;
+	};
+
+	extern arg arg_required;
+	extern arg arg_optional;
+	extern arg arg_none;
+	extern empty_tag empty;
+	static const bool hasdefault = true;
+
+	#define USE_CMDLINE_OPTIONS using namespace peyton::system::opt;
+};
+
 /**
 	\brief	Command line option specification class
 	
@@ -67,6 +169,7 @@ struct Version
 */
 struct Option
 {
+public:
 	/// Argument types for peyton::system::Option
 	enum Argument
 	{
@@ -75,7 +178,8 @@ struct Option
 		optional = 2	///< Option may come with a parameter
 	};
 
-	std::string				key;		///< key to set in the map for this option
+	opt::binding				variable;	///< an option can be bound to a variable (preferred)
+	std::string				key;		///< key to set in the map for this option (deprecated)
 
 	std::string				name;		///< long option name
 	char					shortname;	///< short option name
@@ -88,10 +192,23 @@ struct Option
 
 	static std::string		nodefault;	///< pass this string as defaultvalue to have no default value
 
+protected:
+	friend class Options;
+	void setvalue(const std::string &s)		///< set the value of a bound variable, if any. Called from Options::parse
+		{ variable.setvalue(s); }
 public:
 	bool hasdefaultvalue;				///< does this option have a default value
 
 public:
+	Option(const Option &o)
+		: variable(o.variable), key(o.key),
+		name(o.name), shortname(o.shortname), value(o.value),
+		argument(o.argument),
+		defaultvalue(o.defaultvalue), description(o.description),
+		hasdefaultvalue(o.hasdefaultvalue)
+	{
+	}
+
 	Option(const std::string &key_, 
 		
 		const std::string &name_, const char shortname_ = 0,
@@ -144,7 +261,8 @@ int main(int argc, char **argv)
 }
 \endcode
 */
-class Options : public peyton::system::Config {
+class Options : public peyton::system::Config
+{
 protected:
 	int nargs;
 	std::map<std::string, bool> optionsGiven; ///< Options which appeared on the command line will have optionsGiven entry, mapped by \c Option::key
@@ -173,7 +291,46 @@ public:
 		{
 			options.push_back(Option(key_, name_, shortname_, value_, argument_, defaultvalue_, description_));
 		}
-		
+
+	/// describe how to parse a command line option, using opt classes
+	void option(
+		const opt::base &spec1 = opt::empty,
+		const opt::base &spec2 = opt::empty,
+		const opt::base &spec3 = opt::empty,
+		const opt::base &spec4 = opt::empty,
+		const opt::base &spec5 = opt::empty,
+		const opt::base &spec6 = opt::empty,
+		const opt::base &spec7 = opt::empty,
+		const opt::base &spec8 = opt::empty,
+		const opt::base &spec9 = opt::empty
+		);
+
+	/// describe how to parse a command line option, using opt classes
+	/// by default, requires an argument
+	void option(
+		const std::string &name,
+		const opt::base &spec2 = opt::empty,
+		const opt::base &spec3 = opt::empty,
+		const opt::base &spec4 = opt::empty,
+		const opt::base &spec5 = opt::empty,
+		const opt::base &spec6 = opt::empty,
+		const opt::base &spec7 = opt::empty
+		)
+		{ option(opt::name(name), opt::arg_required, spec2, spec3, spec4, spec5, spec6, spec7); }
+	
+	/// describe how to parse a command line option, using opt classes
+	/// by default, _does not_ require an argument
+	void option(
+		const char shortname,
+		const opt::base &spec2 = opt::empty,
+		const opt::base &spec3 = opt::empty,
+		const opt::base &spec4 = opt::empty,
+		const opt::base &spec5 = opt::empty,
+		const opt::base &spec6 = opt::empty,
+		const opt::base &spec7 = opt::empty
+		)
+		{ option(opt::shortname(shortname), opt::arg_none, spec2, spec3, spec4, spec5, spec6, spec7); }
+
 	/// convenience function for specifying options which require an argument
 	void option_arg(
 		const std::string &name, 				///< key and long name of the option

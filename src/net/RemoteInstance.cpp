@@ -38,7 +38,7 @@ ServerInstance::ServerInstance(const char *l)
 ServerInstance::~ServerInstance()
 {
 	Log::debug(Log::verbose, "Deleting ServerInstance [in destructor]");
-	FOREACHj(clients_t::iterator, cli, clients) {
+	FOREACH2j(clients_t::iterator, cli, clients) {
 		(*cli)->server = NULL;
 		delete *cli;
 	}

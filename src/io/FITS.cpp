@@ -80,7 +80,7 @@ void fits::write(std::valarray<float> &img, int width, int height, std::string f
 
 	if(kwords)
 	{
-		FOREACH(keywords::const_iterator, *kwords) { pFits->pHDU().addKey((*i).first, (*i).second.first, (*i).second.second); }
+		FOREACH2(keywords::const_iterator, *kwords) { pFits->pHDU().addKey((*i).first, (*i).second.first, (*i).second.second); }
 	}
 
 	DEBUG(verbose) << "io::fits: ... done";
@@ -109,7 +109,7 @@ void fits::read(std::valarray<float> &img, int &width, int &height, std::string 
 	{
 		std::string v;
 		typedef std::map< string, Keyword *> sK_t;
-		FOREACH(sK_t::iterator, image.keyWord())
+		FOREACH2(sK_t::iterator, image.keyWord())
 		{
 			Keyword &kw = *(*i).second;
 			(*kwords)[kw.name()] = make_pair(kw.value(v), kw.comment());

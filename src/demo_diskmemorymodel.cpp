@@ -282,7 +282,7 @@ int main_diskmemorymodel(int argc, char *argv[])
 
 		// verify
 		cout << "Verifying\n";
-		FOREACH(vector<int>::iterator, offsets)
+		FOREACH2(vector<int>::iterator, offsets)
 		{
 			int i0 = *i;
 			for(int i = i0; i != i0 + l; i++)

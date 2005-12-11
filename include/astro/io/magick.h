@@ -65,14 +65,14 @@ namespace magick {
 		// the IteratorAdapter class makes it possible for the same code to work on scalars as well
 		// Note that this is incredibly convoluted and was shown to be a bad idea (tm), and should be completely redesigned
 		//
-		double minimum(double a, const V &p) { IteratorAdapter<V> ia(p); FOREACH(IteratorAdapter<V>, ia) { if(*i < a) { a = *i; } }; return a; }
-		double maximum(double a, const V &p) { IteratorAdapter<V> ia(p); FOREACH(IteratorAdapter<V>, ia) { if(*i > a) { a = *i; } }; return a; }
+		double minimum(double a, const V &p) { IteratorAdapter<V> ia(p); FOREACH(ia) { if(*i < a) { a = *i; } }; return a; }
+		double maximum(double a, const V &p) { IteratorAdapter<V> ia(p); FOREACH(ia) { if(*i > a) { a = *i; } }; return a; }
 
 		NormalizedTransfer(Image &img)
 		{
 			// find color range
 			minn = maxx = *(IteratorAdapter<V>(*img.begin()).begin());
-			FOREACH(Image, img)
+			FOREACH(img)
 			{
 				minn = minimum(minn, *i);
 				maxx = maximum(maxx, *i);
@@ -93,7 +93,7 @@ namespace magick {
 		LogTransfer(Image &img)
 		{
 			bool first = true;
-			FOREACH(Image, img)
+			FOREACH(img)
 			{
 				if(*i <= 0) continue;
 				if(first)
@@ -223,7 +223,7 @@ namespace magick {
 
 		Magick::PixelPacket *pp, *pp0 = view.get(0, 0, cols, rows);
 
-		pp = pp0; FOREACHj(Image, p, img) {
+		pp = pp0; FOREACHj(p, img) {
 			RGB v = (*filter)[(*transfer)[*p]] * (1 << 16);
 			(*pp).red = (Magick::Quantum)v[0];
 			(*pp).green = (Magick::Quantum)v[1];

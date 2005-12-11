@@ -14,13 +14,13 @@ using namespace peyton::exceptions;
 
 void EAny::print() throw()
 {
-	Log::debug(Log::exception, "[%s] : %s (at %s:%d)", typeid(*this).name(), info.c_str(), file.c_str(), line);
+	Log::debug(Log::exception, "[%s] : %s (at %s:%d)", type_name(*this).c_str(), info.c_str(), file.c_str(), line);
 }
 
 EAny::operator std::string()
 {
 	std::ostringstream s;
-	s << io::format("[%s] : %s (at %s:%d)") << typeid(*this).name() << info.c_str() << file.c_str() << line;
+	s << io::format("[%s] : %s (at %s:%d)") << type_name(*this) << info << file << line;
 	return s.str();
 }
 

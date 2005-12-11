@@ -38,7 +38,7 @@ namespace io {
 	\todo Explain what's my LFS directory.
 */
 namespace fits {
-#ifdef HAVE_LIBCCFITS
+#ifdef HAVE_PKG_CCfits
 	typedef std::pair<std::string, std::string> value_comment_pair;
 	typedef std::map<std::string, value_comment_pair> keywords;
 
@@ -100,7 +100,7 @@ namespace fits {
 	{
 		read((typename Image::array_type &)img, img.x(), img.y(), file);
 	}
-#endif // HAVE_LIBCCFITS
+#endif // HAVE_PKG_CCfits
 }
 }
 }

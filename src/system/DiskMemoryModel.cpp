@@ -130,7 +130,7 @@ void DMMSet::truncate()
 	// erase any storage files we have
 	closefilehandles();
 
-	FOREACH(blocks_t::iterator, blocks)
+	FOREACH2(blocks_t::iterator, blocks)
 	{
 		const char *fn = (*i).second.path.c_str();
 		unlink(fn);
@@ -141,7 +141,7 @@ void DMMSet::truncate()
 
 void DMMSet::closefilehandles()
 {
-	FOREACH(blocks_t::iterator, blocks)
+	FOREACH2(blocks_t::iterator, blocks)
 	{
 		(*i).second.closefile();
 	}
@@ -215,7 +215,7 @@ void DMMSet::save(const std::string &cfgfn)
 	out.flush();
 
 	int i = 1;
-	FOREACHj(blocks_t::iterator, k, blocks)
+	FOREACH2j(blocks_t::iterator, k, blocks)
 	{
 		DMMBlock &b = (*k).second;
 
@@ -564,13 +564,13 @@ void DiskMemoryModel::open(const DMMSet &dmm_, const std::string &mode)
 
 void DiskMemoryModel::sync()
 {
-	FOREACH(windowmap::iterator, openwindows) { LIST(i).mm->sync(); }
+	FOREACH2(windowmap::iterator, openwindows) { LIST(i).mm->sync(); }
 	if(openmode & O_RDWR || openmode & O_WRONLY) { dmm.save(dmmfn); }
 }
 
 void DiskMemoryModel::closewindows()
 {
-	FOREACH(windowmap::iterator, openwindows) { closemm(LIST(i)); }
+	FOREACH2(windowmap::iterator, openwindows) { closemm(LIST(i)); }
 	openwindows.clear();
 	windowqueue.clear();
 }

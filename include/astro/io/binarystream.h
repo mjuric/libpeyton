@@ -18,13 +18,18 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#ifndef binarystream_h__
+#define binarystream_h__
+
+#ifdef HAVE_BOOST_IOSTREAMS
+
 #include <iostream>
 #include <algorithm>
 #include <vector>
 
-#include <boost/type_traits.hpp>
+#include <astro/util.h>
 
-#include <cxxabi.h>
+#include <boost/type_traits.hpp>
 
 namespace peyton {
 namespace io {
@@ -82,28 +87,6 @@ namespace boost
 // Type traits utilities. Should be separated into it's own header.
 //
 
-#include <sstream>
-template<typename T>
-	std::string type_name()
-	{
-		std::string tmp;
-		int status;
-
-		char *name = abi::__cxa_demangle(typeid(T).name(), 0, 0, &status);
-		if(status != 0)
-		{
-			std::ostringstream s(tmp);
-			s << "demangling error (status code = " << status;
-		}
-		else
-		{
-			tmp = name;
-		}
-		free(name);
-		
-		return tmp;
-	}
-
 namespace peyton {
 namespace io {
 
@@ -146,7 +129,7 @@ namespace io {
 					static bool passed = false;
 					if(track_manifest && !passed)
 					{
-						std::string tname = type_name<T>();
+						std::string tname = peyton::util::type_name<T>();
 						typedef typename ::boost::is_pod<T> pod;
 						
 						// 'T' and 'const T' map to same datatype name, so check if T
@@ -159,7 +142,7 @@ namespace io {
 	
 						if(!pod::value)
 						{
-							std::cerr << "WARNING: Binary I/O as POD for type '" << type_name<T>() << "'\n";
+							std::cerr << "WARNING: Binary I/O as POD for type '" << peyton::util::type_name<T>() << "'\n";
 						}
 	
 						passed = true;
@@ -187,7 +170,7 @@ namespace io {
 		class basic_obstream : public std::basic_ostream<_CharT, _Traits>
 		{
 		protected:
-			explicit basic_obstream() : std::basic_ostream<_CharT, _Traits>() {}
+//			explicit basic_obstream() : std::basic_ostream<_CharT, _Traits>() {}
 		public:
 			template<typename X>
 				basic_obstream& write_pod(const X* v, size_t n)
@@ -240,16 +223,16 @@ namespace io {
 		{
 		public:
 			explicit basic_bstream(std::basic_streambuf<_CharT, _Traits> *sb)
-				: basic_obstream<_CharT, _Traits>(),
-				  basic_ibstream<_CharT, _Traits>()
+				: basic_obstream<_CharT, _Traits>(sb),
+				  basic_ibstream<_CharT, _Traits>(sb)
 				{
-					this->init(sb);
+					//this->init(sb);
 				}
 			explicit basic_bstream(std::basic_iostream<_CharT, _Traits> &io)
-				: basic_obstream<_CharT, _Traits>(),
-				  basic_ibstream<_CharT, _Traits>()
+				: basic_obstream<_CharT, _Traits>(io.rdbuf()),
+				  basic_ibstream<_CharT, _Traits>(io.rdbuf())
 				{
-					this->init(io.rdbuf());
+					//this->init(io.rdbuf());
 				}
 		};
 	
@@ -260,8 +243,8 @@ namespace io {
 	// Operator declaration macros
 	//
 
-	#define BOSTREAM2(T...) obstream& operator<<(obstream &out, T)
-	#define BISTREAM2(T...) ibstream& operator>>(ibstream &in,  T)
+	#define BOSTREAM2(T...) peyton::io::obstream& operator<<(peyton::io::obstream &out, T)
+	#define BISTREAM2(T...) peyton::io::ibstream& operator>>(peyton::io::ibstream &in,  T)
 	
 	//
 	// Generic POD input/output operators
@@ -336,7 +319,7 @@ namespace io {
 			out << size;
 
 			// Dispatching to an optimized version, if we're dealing with an
-			// array op POD-like types.
+			// array of POD-like types.
 			// NOTE: we assume that iterators which are pointers do not have
 			// overloaded * and ++ operators. If they do, this code will malfunction.
 			typedef ::boost::is_pointer<IT> is_simple;
@@ -349,9 +332,10 @@ namespace io {
 		}
 
 	//
-	// Reading routines for containers. There are two versions,
+	// Reading routines for containers. There are three versions,
 	// one optimized for containers linearly stored in memory,
-	// and the generic one.
+	// the generic one, and one optimized for maps (avoids the
+	// unnecessary temporaries of data_type)
 	//
 	template <typename C>
 		inline ibstream& itread(ibstream &in, C &a)
@@ -375,9 +359,34 @@ namespace io {
 		{
 			unsigned int size;
 			in >> size;
-	
 			a.resize(size);
-			in.read_pod(&a[0], size);
+
+			typedef ::boost::is_pod<typename C::value_type> is_podd;
+			if(is_podd::value)
+			{
+				in.read_pod(&a[0], size);
+			}
+			else
+			{
+				for(int i = 0; i != size; ++i) { in >> a[i]; }
+			}
+			return in;
+		}
+
+	template <typename C>
+		inline ibstream& itreadmap(ibstream &in, C &a)
+		{
+			unsigned int size;
+			in >> size;
+	
+			a.clear();
+
+			typename C::key_type key;
+			while(size--)
+			{
+				in >> key;
+				in >> a[key];
+			}
 			return in;
 		}
 
@@ -429,12 +438,16 @@ namespace io {
 		inline BISTREAM2(std::multiset<T, C, A> &a) { return itread(in, a); }
 		
 	template <typename K, typename V, typename C, typename A>
-		inline BISTREAM2(std::map<K, V, C, A> &a) { return itread(in, a); }
+		inline BISTREAM2(std::map<K, V, C, A> &a) { return itreadmap(in, a); }
 	template <typename K, typename V, typename C, typename A>
-		inline BISTREAM2(std::multimap<K, V, C, A> &a) { return itread(in, a); }
+		inline BISTREAM2(std::multimap<K, V, C, A> &a) { return itreadmap(in, a); }
 	
 	template <typename T>
 		inline BISTREAM2(std::valarray<T> &a) { return itreadvec(in, a); }
 
 } // namespace io
 } // namespace peyton
+
+#endif // HAVE_BOOST_IOSTREAMS
+
+#endif // binarystream_h__

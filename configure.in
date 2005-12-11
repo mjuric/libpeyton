@@ -1,7 +1,7 @@
 AC_INIT(configure.in)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(libpeyton, 0.3)
+AM_INIT_AUTOMAKE(libpeyton, 0.4)
 
 LIBS="-lm"
 
@@ -29,12 +29,17 @@ AC_caolan_CHECK_PACKAGE(CCfits, main, CCfits, CCfits/CCfits,
 RS_BOOST([1.33.0],
 	[
 	  CXXFLAGS="$CXXFLAGS $BOOST_CPPFLAGS"
+	  AC_DEFINE(HAVE_BOOST, 1, Define if you have the package)
 	],[
-	  AC_MSG_ERROR([Package requires the Boost C++ libraries!])
+	  AC_MSG_RESULT([Boost C++ libraries NOT found. Omitting Boost dependent code.])
 	])
+
 RS_BOOST_IOSTREAMS(
-	[],[
-	  AC_MSG_ERROR([Boost.Iostreams are required but not found.])
+	[
+	  AC_MSG_RESULT([    - Boost.Iostreams found.])
+          AC_DEFINE(HAVE_BOOST_IOSTREAMS, 1, Define if you have the package)
+	],[
+	  AC_MSG_RESULT([    - Boost.Iostreams NOT found. Omitting Boost.Iostreams dependent code.])
 	])
 
 AC_OUTPUT(Makefile src/Makefile include/Makefile src/asteroids/Makefile src/asteroids/catalogs/Makefile src/image/Makefile src/io/Makefile src/net/Makefile src/sdss/Makefile src/system/Makefile src/ui/Makefile)

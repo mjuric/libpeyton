@@ -4,7 +4,9 @@
 #include <astro/system/log.h>
 
 #include <sstream>
+#include <iostream>
 #include <map>
+#include <set>
 #include <string>
 #include <memory>
 #include <vector>
@@ -59,8 +61,8 @@ void Options::parse(int argc, char **argv)
 	std::string optstring("-");
 
 	std::vector<getopt_option> opts;
-	FOREACH(std::vector<Option>::iterator, options) {
-		const Option &o = *i;
+	FOREACH2(std::vector<Option>::iterator, options) {
+		Option &o = *i;
 
 		if(o.key == "") { THROW(peyton::exceptions::EOptions, "Option key cannot be an empty string"); }
 
@@ -77,7 +79,7 @@ void Options::parse(int argc, char **argv)
 
 		if(o.hasdefaultvalue)
 		{
-			result[o.key] = o.defaultvalue; // set the default value for this option
+			o.setvalue(result[o.key] = o.defaultvalue); // set the default value for this option
 		}
 
 		// construct options struct
@@ -87,12 +89,12 @@ void Options::parse(int argc, char **argv)
 	static struct option null_option = { NULL, 0, false, 0};
 	opts.push_back(null_option);
 
-	FOREACH(std::vector<Option>::iterator, args) {
-		const Option &o = *i;
+	FOREACH2(std::vector<Option>::iterator, args) {
+		Option &o = *i;
 		
 		if(o.hasdefaultvalue)
 		{
-			result[o.key] = o.defaultvalue; // set the default value for this argument
+			o.setvalue(result[o.key] = o.defaultvalue); // set the default value for this argument
 		}
 	}
 
@@ -125,10 +127,10 @@ void Options::parse(int argc, char **argv)
 		// if a short option is found, getopt_long returns the option character, and not the long option index
 		if(c != 0) { index = shortlong[c]; }
 
-		const Option &o = ((c == 1) ? args[nargs-1] : options[index]);
+		Option &o = ((c == 1) ? args[nargs-1] : options[index]);
 		optionsGiven[o.key] = true;				// Note that the option was found
-		result[o.key] = optarg ? optarg : o.value;	// If the option has an argument, set the map value to that argument ...
-										// ... and set it to o.value, otherwise
+		o.setvalue(result[o.key] = optarg ? optarg : o.value);	// If the option has an argument, set the map value to that argument ...
+									// ... and set it to o.value, otherwise
 		// DEBUG(verbose, "Setting option " << o.key << " to '" << o.value << "'");
 	}
 
@@ -136,6 +138,16 @@ void Options::parse(int argc, char **argv)
 	{
 		THROW(EOptions, string("To few command line arguments found (") + str(nargs) + ')');
 	}
+}
+
+std::string argapp(const Option &o, const std::string &sep = "=")
+{
+	switch(o.argument)
+	{
+		case Option::optional: return std::string("[") + sep + "[argument]";
+		case Option::required: return sep + "<argument>";
+	}
+	return "";
 }
 
 std::string Options::usage(char **argv)
@@ -161,7 +173,7 @@ std::string Options::usage(char **argv)
 	if(!args.empty()) {
 		out << "Usage : ";
 		out  << program << " ";
-		FOREACH(std::vector<Option>::iterator, args) {
+		FOREACH2(std::vector<Option>::iterator, args) {
 			Option &o = *i;
 
 			if(i != args.begin())              { out << " "; }
@@ -170,32 +182,43 @@ std::string Options::usage(char **argv)
 			else                               { out << "[" + o.key << "]"; }
 		}
 		out << "\n\n";
-		FOREACH(std::vector<Option>::iterator, args) {
+		FOREACH2(std::vector<Option>::iterator, args) {
 			Option &o = *i;
-			out << "      - " << o.key << " -- " << o.description << "\n";
+			out << "    *  " << o.key << " -- " << o.description << "\n";
 		}
 		out << "\n";
 	}
 
 	if(options.size() > 11) { // taking into account negative number argument hack
-		out << "Options available:\n\n";
-		FOREACH(std::vector<Option>::iterator, options) {
+		out << "Available options:\n\n";
+		FOREACH2(std::vector<Option>::iterator, options) {
 			Option &o = *i;
 			if(o.shortname == '.' || (o.shortname >= '0' && o.shortname <= '9')) continue;
-			out << "\t--" << o.name;
-			switch(o.argument)
+
+			out << "    * ";
+			if(o.shortname != 0)
 			{
-				case Option::optional: out << "[=argument]"; break;
-				case Option::required: out << "=argument"; break;
+				out << "-" << o.shortname << argapp(o, "");
+			}
+			if(o.name != std::string(1, o.shortname))
+			{
+				out << (o.shortname != 0 ? ", " : "") << "--" << o.name << argapp(o, "=");
 			}
 
-			if(o.hasdefaultvalue)
+			if(o.argument != Option::none)
 			{
-				out << " (default '" << o.defaultvalue << "')";
+				if(o.hasdefaultvalue)
+				{
+					out << " (default '" << o.defaultvalue << "')";
+				}
+				else if(o.variable.bound() && o.variable.hasdefaultvalue())
+				{
+					out << " (default '" << o.variable.to_string() << "')";
+				}
 			}
 			out << "\n";
 
-			out << "\t\t" << o.description << "\n";
+			out << "        " << o.description << "\n";
 		}
 		out << "\n";
 	}
@@ -213,4 +236,139 @@ void Options::argument(const std::string &key, const std::string &description, c
 	Option::Argument a_ = (!args.empty() && args.back().argument == Option::optional) ? Option::optional : argument;
 
 	args.push_back(Option(key, "$", 0, "", a_, defaultvalue, description));
+}
+
+opt::arg peyton::system::opt::arg_required("required");
+opt::arg peyton::system::opt::arg_optional("optional");
+opt::arg peyton::system::opt::arg_none("none");
+opt::empty_tag peyton::system::opt::empty;
+
+void opt::binding::setvalue(const std::string &s)
+{
+	switch(type)
+	{
+		case t_double: *var.v_double = atof(s.c_str()); break;
+		case t_float: *var.v_float = atof(s.c_str()); break;
+		case t_int: *var.v_int = atoi(s.c_str()); break;
+		case t_short: *var.v_short = atoi(s.c_str()); break;
+		case t_bool:
+			*var.v_bool = s == "1" || tolower(s) == "true";
+			break;
+		case t_string: *var.v_string = s; break;
+	};
+}
+
+std::string opt::binding::to_string() const
+{
+	std::ostringstream ss;
+	switch(type)
+	{
+		case t_double: ss << *var.v_double; break;
+		case t_float: ss << *var.v_float; break;
+		case t_int: ss << *var.v_int; break;
+		case t_short: ss << *var.v_short; break;
+		case t_bool: ss << *var.v_bool; break;
+		case t_string: ss << *var.v_string; break;
+	};
+	ss.flush();
+	return ss.str();
+}
+
+void opt::shortname::apply(Option &o) const
+{
+	o.shortname = val.size() ? val[0] : 0;
+	if(o.shortname != 0)
+	{
+		o.name = o.shortname;
+		o.value = o.shortname;
+	}
+};
+
+void opt::name::apply(Option &o) const
+{
+	o.name = val;
+	if(o.name.size())
+	{
+		o.key = o.name;
+		o.value = o.name;
+	}
+}
+
+void opt::binding::apply(Option &o) const
+{
+	o.variable = *this;
+	if(type == t_bool) { o.value = "true"; }
+}
+
+void opt::key::apply(Option &o) const
+{
+	if(val.size())
+	{
+		o.key = val;
+	}
+}
+
+void opt::arg::apply(Option &o) const
+{
+	switch(val[0])
+	{
+	case 'r': o.argument = Option::required; break;
+	case 'o': o.argument = Option::optional; break;
+	case 'n': o.argument = Option::none; break;
+	}
+}
+
+void opt::value::apply(Option &o)     const { o.value = val; }
+void opt::def_value::apply(Option &o) const { o.defaultvalue = val; o.hasdefaultvalue = true; }
+void opt::desc::apply(Option &o)      const { o.description = val; }
+void opt::empty_tag::apply(Option &o) const { /* noop */ }
+
+opt::arg::arg(const std::string &s)
+: base(s, 30)
+{
+	if(s != "required" && s != "optional" && s != "none")
+	{
+		THROW(peyton::exceptions::EOptions, "Option argument must be one of 'required', 'optional' or 'none'. PS: It's better to use arg::required, arg::optional, arg::none.");
+	}
+}
+
+struct lt_o_spec
+{
+	bool operator()(const opt::base *a, const opt::base *b) const { return a->priority < b->priority; }
+};
+
+void Options::option(
+	const opt::base &spec1,
+	const opt::base &spec2,
+	const opt::base &spec3,
+	const opt::base &spec4,
+	const opt::base &spec5,
+	const opt::base &spec6,
+	const opt::base &spec7,
+	const opt::base &spec8,
+	const opt::base &spec9
+	)
+{
+	// note: the ability of conflicting options to override each other
+	// (eg., for arg_required given _after_ arg_none to be the dominant option)
+	// will break badly if order of elements in stl::multimap is implementation
+	// dependent (coudn't figure out if it is).
+	std::multiset<const opt::base *, lt_o_spec> specset;
+	specset.insert(&spec1);
+	specset.insert(&spec2);
+	specset.insert(&spec3);
+	specset.insert(&spec4);
+	specset.insert(&spec5);
+	specset.insert(&spec6);
+	specset.insert(&spec7);
+	specset.insert(&spec8);
+	specset.insert(&spec9);
+
+	Option o("", "");
+	FOREACH(specset)
+	{
+		(*i)->apply(o);
+	}
+
+	options.push_back(o);
 }

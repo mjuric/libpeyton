@@ -69,7 +69,7 @@ public:
 
 		return *this;
 	}
-	ImageBase& operator=(T x) { FOREACHj(ImageBase<T>, i, *this) { *i = x; }; return *this; }
+	ImageBase& operator=(T x) { FOREACH2j(ImageBase<T>, i, *this) { *i = x; }; return *this; }
 	~ImageBase() { delete [] data; }
 
 	T &at(int x, int y) { ASSERT(x >= 0 && y >= 0 && x < w && y < h); return data[y*w + x]; }
@@ -104,13 +104,13 @@ public:
 		return true;
 	}
 
-	template<typename Scalar> ImageBase &operator*=(Scalar c) { FOREACHj(ImageBase<T>, i, *this) { *i *= c; }; return *this; }
+	template<typename Scalar> ImageBase &operator*=(Scalar c) { FOREACH2j(ImageBase<T>, i, *this) { *i *= c; }; return *this; }
 
 	ImageBase &operator*=(ImageBase &b) {
 		if(b.w != w && b.h != h) THROW(peyton::exceptions::EAny, "Images are not of the same size!");
 
 		iterator o = begin();
-		FOREACHj(ImageBase<T>, i, b) {
+		FOREACH2j(ImageBase<T>, i, b) {
 			*o *= *i;
 			o++;
 		}
@@ -122,7 +122,7 @@ public:
 		if(b.w != w && b.h != h) THROW(peyton::exceptions::EAny, "Images are not of the same size!");
 
 		iterator o = begin();
-		FOREACHj(ImageBase<T>, i, b) {
+		FOREACH2j(ImageBase<T>, i, b) {
 			if(*i) { *o /= *i; } else { *o = 0; }
 			o++;
 		}
@@ -130,10 +130,10 @@ public:
 		return *this;
 	}
 
-	ImageBase &operator*=(T f) { FOREACH(ImageBase<T>, *this) { *i *= f; }; return *this; }
-	ImageBase &operator/=(T f) { FOREACH(ImageBase<T>, *this) { *i /= f; }; return *this; }
-	ImageBase &operator+=(T f) { FOREACH(ImageBase<T>, *this) { *i += f; }; return *this; }
-	ImageBase &operator-=(T f) { FOREACH(ImageBase<T>, *this) { *i -= f; }; return *this; }
+	ImageBase &operator*=(T f) { FOREACH2(ImageBase<T>, *this) { *i *= f; }; return *this; }
+	ImageBase &operator/=(T f) { FOREACH2(ImageBase<T>, *this) { *i /= f; }; return *this; }
+	ImageBase &operator+=(T f) { FOREACH2(ImageBase<T>, *this) { *i += f; }; return *this; }
+	ImageBase &operator-=(T f) { FOREACH2(ImageBase<T>, *this) { *i -= f; }; return *this; }
 
 };
 
@@ -144,7 +144,7 @@ inline ComplexImage &copy(ComplexImage &out, Image &in)
 {
 	out.resize(in.dim());
 	ComplexImage::iterator o = out.begin();
-	FOREACHj(Image::iterator, i, in) { (*o) = *i; o++; }
+	FOREACH2j(Image::iterator, i, in) { (*o) = *i; o++; }
 	return out;
 }
 
@@ -152,7 +152,7 @@ inline Image &copy(Image &out, ComplexImage &in)
 {
 	out.resize(in.dim());
 	Image::iterator o = out.begin();
-	FOREACHj(ComplexImage::iterator, i, in) { *o = (*i).real(); o++; }
+	FOREACH2j(ComplexImage::iterator, i, in) { *o = (*i).real(); o++; }
 	return out;
 }
 
@@ -160,7 +160,7 @@ inline Image &abs(Image &out, ComplexImage &in)
 {
 	out.resize(in.dim());
 	Image::iterator o = out.begin();
-	FOREACHj(ComplexImage::iterator, i, in) { *o = abs(*i); o++; }
+	FOREACH2j(ComplexImage::iterator, i, in) { *o = abs(*i); o++; }
 	return out;
 }
 

@@ -42,7 +42,7 @@ void Poly::push_back(V2 v)
 
 void Poly::deintegerize()
 {
-	FOREACHj(Vertices::iterator, v, vs) {
+	FOREACH2j(Vertices::iterator, v, vs) {
 		if((*v).x == rint((*v).x)) {
 			double w = xmax - xmin;
 			(*v).x += epsilon * w;
@@ -54,7 +54,7 @@ void Poly::deintegerize()
 Poly Poly::unflip()
 {
 	Poly p;
-	FOREACHj(Vertices::iterator, v, vs) { p.push_back(V2(-(*v).y, (*v).x)); }
+	FOREACH2j(Vertices::iterator, v, vs) { p.push_back(V2(-(*v).y, (*v).x)); }
 	return p;
 }
 
@@ -94,7 +94,7 @@ inline Poly Poly::cutMyself()
 {
 	// calculate y bounds
 	Poly out;
-	FOREACHj(Vertices::iterator, vit, vs) { out.push_back(flip(v)); }
+	FOREACH2j(Vertices::iterator, vit, vs) { out.push_back(flip(v)); }
 	vs.clear();
 	return out;
 }
