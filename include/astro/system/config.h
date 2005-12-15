@@ -110,6 +110,18 @@ string z = config["string_value"];
 			@endcode
 		*/
 		const Variant operator[](const std::string &key) const throw();
+		
+		/**
+			If the configuration value name exists, set var = cfg[name], 
+			else set var to dflt.
+		*/
+		template <typename T>
+		bool get(T &var, const std::string &name, const T &dflt)
+		{
+			std::map<std::string, std::string>::iterator it = find(name);
+			var = it != this->end() ? Variant((*it).second) : dflt;
+			return it != end();
+		}
 	};
 
 }

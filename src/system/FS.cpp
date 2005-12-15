@@ -12,7 +12,7 @@
 using namespace peyton::system;
 using namespace peyton::exceptions;
 
-EnvVar::operator std::string() const
+const char *EnvVar::c_str() const
 {
 	const char *c = getenv(nm.c_str());
 	if(c == NULL)
@@ -20,6 +20,11 @@ EnvVar::operator std::string() const
 		THROW(EEnvVarNotSet, "Environment variable '" + nm + "' is not set");
 	}
 	return c;
+}
+
+EnvVar::operator std::string() const
+{
+	return c_str();
 }
 
 void EnvVar::set(const std::string &v, bool overwrite)
@@ -37,7 +42,7 @@ void EnvVar::unset() throw()
 
 EnvVar::operator bool() const throw()
 {
-	return (getenv(nm.c_str()) == NULL);
+	return (getenv(nm.c_str()) != NULL);
 }
 
 namespace peyton {

@@ -146,7 +146,7 @@ Poly Poly::cutflip(int x)
 void processPoly(Poly &base)
 {
 
-	DEBUG(verbose) << "input base : " << base << "\n";
+	DEBUG(verb2) << "input base : " << base << "\n";
 
 	int i, j;
 	double mass = 0;
@@ -154,8 +154,8 @@ void processPoly(Poly &base)
 	base.deintegerize();
 	for(i = (int)base.xmin + 1; !base.vs.empty(); i++) {
 		Poly left = base.cutflip(i);
-		DEBUG(verbose) << "--- i = " << i;
-		DEBUG(verbose) << "left  : " << left.unflip();
+		DEBUG(verb2) << "--- i = " << i;
+		DEBUG(verb2) << "left  : " << left.unflip();
 //		cout << "base  : " << base << "\n";
 //		cout << "ranges : " << left.xmin << "," << left.xmax << "\n";
 		sx += left.area();
@@ -163,15 +163,15 @@ void processPoly(Poly &base)
 		left.deintegerize();
 		for(j = (int)left.xmin + 1; !left.vs.empty(); j++) {
 			Poly bottom = left.cutflip(j);
-			DEBUG(verbose) << "   ---- j = " << j << "\n";
-			DEBUG(verbose) << "   bottom : " << bottom.unflip().unflip() << "\n";
-			DEBUG(verbose) << "   base   : " << left << "\n";
+			DEBUG(verb2) << "   ---- j = " << j << "\n";
+			DEBUG(verb2) << "   bottom : " << bottom.unflip().unflip() << "\n";
+			DEBUG(verb2) << "   base   : " << left << "\n";
 //			mass += rho(i, j) * bottom.area();
 			sy += bottom.area();
 		}
-		DEBUG(verbose) << "   mass : " << sy << "\n";
+		DEBUG(verb2) << "   mass : " << sy << "\n";
 	}
-	DEBUG(verbose) << "   mass : " << sx;
+	DEBUG(verb2) << "   mass : " << sx;
 }
 
 #ifdef __TRANSFORM_TEST

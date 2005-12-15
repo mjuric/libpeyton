@@ -54,6 +54,7 @@ void moduloTest()
 
 int main(int argc, char *argv[])
 {
+	return 0;
 	//moduloTest(); return 0;
 
 	return demo_binarystream();

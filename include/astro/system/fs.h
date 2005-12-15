@@ -38,6 +38,8 @@ namespace peyton {
 
 			/// read the value of the environment variable
 			operator std::string() const;
+			/// read the value of the environment variable
+			const char *c_str() const;
 			/// set the value of an environment variable, overwriting the former value
 			EnvVar &operator =(const std::string &v) { set(v); }
 			/// is the environment variable set?

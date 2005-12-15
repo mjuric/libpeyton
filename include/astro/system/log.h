@@ -14,26 +14,56 @@ namespace system {
 */
 class Log {
 protected:
-	static char buf[1000];
-	static int debugLevel;
+	char buf[1000];
+
+	std::string name;
+	int debugLevel;
+	bool debuggingOn;
 public:
-	static void write(const char *text, ...);
-	static void debug(int level, const char *text, ...);
+#if 0
+	void write(const char *text, ...);
+	void debug(int level, const char *text, ...);
 
-	static std::ostream &stream_begin();
-	static void stream_end();
-
-	enum { terminate=-2, error, exception, basic, verbose, all };
+	std::ostream &stream_begin();
+	void stream_end();
+#endif
+	enum { terminate=-2, error, exception, verb1, verb2, verb3, verb4, verb5 };
 
 public:
 	class linestream : public std::ostringstream {
+	protected:
+		Log &parent;
 	public:
-		linestream(int level);
+		linestream(Log &parent, int level);
 		~linestream();
 		std::ostringstream &stream();
 	};
-	static int level(int newlevel = -1);
+	Log(const std::string &name, int level = exception, bool on = true);
+	int level(int newlevel = -1);
+	const std::string &identify() { return name; }
 };
+
+namespace logs
+{
+	extern Log peyton; ///< predefined log for libpeyton debugging
+	extern Log app; ///< predefined log for application messaging
+}
+
+//	namespace peyton { namespace system { namespace logs { \
+
+#define LOG_DECLARE(name) \
+	namespace peyton { namespace system { namespace logs { \
+	extern peyton::system::logs::Log peyton::system::logs::name; \
+	} } }
+
+#define LOG_DEFINE(name, lev, on) \
+	::peyton::system::Log peyton::system::logs::name(#name, ::peyton::system::Log::lev, on);
+
+#define LOG(log, lev) \
+	if(peyton::system::logs::log.level() >= peyton::system::Log::lev) \
+		peyton::system::Log::linestream(peyton::system::logs::log, peyton::system::Log::lev).stream()
+
+#define DEBUG(lev) LOG(peyton, lev)
 
 /**
 	\brief		This function is only to be used through ASSERT() macro
@@ -51,10 +81,6 @@ bool assert_msg_abort();
 #define ASSERT(cond) \
 	for(bool __nuke = !(cond); __nuke && peyton::system::assert_msg_message(#cond, "<function_name_unsupported>"_, __FILE__, __LINE__); peyton::system::assert_msg_abort())
 #endif
-
-#define DEBUG(lev) \
-	if(peyton::system::Log::level() >= peyton::system::Log::lev) \
-		peyton::system::Log::linestream((int)peyton::system::Log::lev).stream()
 
 #define ERRCHECK(condition) if(condition)
 //#define ASSERT(cond) assert(cond)

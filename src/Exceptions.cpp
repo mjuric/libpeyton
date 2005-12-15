@@ -14,7 +14,7 @@ using namespace peyton::exceptions;
 
 void EAny::print() throw()
 {
-	Log::debug(Log::exception, "[%s] : %s (at %s:%d)", type_name(*this).c_str(), info.c_str(), file.c_str(), line);
+	DEBUG(exception) << (std::string)(*this);
 }
 
 EAny::operator std::string()

@@ -32,12 +32,12 @@ ServerInstance::ServerInstance(const char *l)
 		host = h;
 	}
 
-	Log::debug(Log::basic, "Local host: %s", host.c_str());
+	DEBUG(verb1) << "Local host: " << host;
 }
 
 ServerInstance::~ServerInstance()
 {
-	Log::debug(Log::verbose, "Deleting ServerInstance [in destructor]");
+	DEBUG(verb2) << "Deleting ServerInstance [in destructor]";
 	FOREACH2j(clients_t::iterator, cli, clients) {
 		(*cli)->server = NULL;
 		delete *cli;
@@ -51,7 +51,7 @@ RemoteInstance::RemoteInstance()
 
 RemoteInstance::~RemoteInstance()
 {
-	Log::debug(Log::verbose, "Deleting RemoteInstance [in destructor]");
+	DEBUG(verb2) << "Deleting RemoteInstance [in destructor]";
 	if(server != NULL) {
 		ServerInstance::clients_t::iterator i = find(server->clients.begin(), server->clients.end(), this);
 		if(i != server->clients.end()) {
@@ -148,7 +148,7 @@ bool ServerInstance::spawnFlock(string flockName, string exe, vector<pair<string
 		try {
 			FOR(0, ninstances) {
 				n++;
-				DEBUG(verbose) << "Starting up flock member: " << host << " [" << i << " currently running]";
+				DEBUG(verb2) << "Starting up flock member: " << host << " [" << i << " currently running]";
 				spawn(exe.c_str(), host.c_str());
 			}
 		} catch(EAny &e) {
@@ -174,7 +174,7 @@ RemoteInstance::RemoteInstance(ServerInstance *server, const char *c, const char
 	char ssh[1000];
 	sprintf(ssh, "/usr/bin/ssh %s %s --remote-server %s:%d > /dev/null 2>&1", host.c_str(), command.c_str(), server->host.c_str(), server->port);
 //	sprintf(ssh, "/usr/bin/ssh %s %s --remote-server %s:%d"                 , host.c_str(), command.c_str(), server->host.c_str(), server->port);
-	Log::debug(Log::verbose, "%s", ssh);
+	DEBUG(verb2) << ssh;
 
 	int pid = fork();
 	switch(pid) {
@@ -203,11 +203,11 @@ RemoteInstance::RemoteInstance(ServerInstance *server, const char *c, const char
 		THROW(ERI, "Error forking child for SSH remote execution [errno=" + util::str(errno) + "]\n");
 	}
 
-	Log::debug(Log::verbose, "Forked a remote exec. process, pid=%d", pid);
+	DEBUG(verb2) << "Forked a remote exec. process, pid=" << pid;
 	server->link.accept(link, 10);
 	server->clients.push_back(this);
 	this->server = server;
-	Log::debug(Log::verbose, "Remote process established connection to master");
+	DEBUG(verb2) << "Remote process established connection to master";
 }
 
 int RemoteInstance::write(const void *data, int size)
@@ -263,7 +263,7 @@ void RemoteInstance::bindToServer(const char *fqdn)
 	if(sscanf(fqdn, "%[^:]:%d", master, &port) != 2)
 		THROW(ERI, "Badly formatted --remote-server string - shoud be host.fqdn.edu:port");
 
-	Log::debug(Log::verbose, "Contacting master at %s:%d", master, port);
+	DEBUG(verb2) << "Contacting master at " << master << ":" << port;
 
 	link.connect(master, port);
 }

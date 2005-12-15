@@ -1,4 +1,5 @@
 #include <astro/system/log.h>
+#include <astro/system/fs.h>
 
 #include <string.h>
 #include <stdarg.h>
@@ -9,7 +10,10 @@
 
 using namespace peyton::system;
 
-char Log::buf[1000];
+LOG_DEFINE(peyton, exception, true);
+LOG_DEFINE(app, verb1, true);
+
+#if 0
 void Log::write(const char *text, ...)
 {
 	va_list marker;
@@ -33,8 +37,7 @@ void Log::debug(int level, const char *text, ...)
 
 	std::cerr << "L" << level << ": " << buf << "\n";
 }
-
-int Log::debugLevel = 10;
+#endif
 
 int Log::level(int newlevel)
 {
@@ -44,16 +47,47 @@ int Log::level(int newlevel)
 	return newlevel;
 }
 
-
-Log::linestream::linestream(int level)
-: std::ostringstream()
+Log::Log(const std::string &n, int level, bool on)
+: name(n), debugLevel(level), debuggingOn(on)
 {
-	(*this) << " [ debug" << level << " ] ";
+	// specific to this object
+	{
+	EnvVar e_on(name + "_debug_on");
+	if(e_on) { debuggingOn = atoi(e_on.c_str()) != 0; }
+	EnvVar e_l(name + "_debug_level");
+	if(e_l) { debugLevel = atoi(e_l.c_str()); }
+	}
+	
+	// global commands
+	{
+	EnvVar e_on("all_debug_on");
+	if(e_on) { debuggingOn = atoi(e_on.c_str()) != 0; }
+	EnvVar e_l("all_debug_level");
+	if(e_l) { debugLevel = atoi(e_l.c_str()); }
+	}
+	
+	// make a sound if called for
+	{
+	EnvVar e_on("all_debug_list");
+	EnvVar e_on1(name + "_debug_list");
+	if(e_on || e_on1)
+	{
+		linestream(*this, -3).stream() << "Log '" << identify()
+			<< "', debug_on = " << debuggingOn << ", "
+			<< "debug_level = " << debugLevel;
+	}
+	}
+}
+
+Log::linestream::linestream(Log &p, int level)
+: parent(p), std::ostringstream()
+{
+	(*this) << " [ " << parent.identify() << ", " << level << " ]   ";
 }
 
 Log::linestream::~linestream()
 {
-	(*this) << "\n"/* << std::ends*/; std::cerr << str();
+	(*this) << "\n"; std::cerr << str();
 }
 
 std::ostringstream &Log::linestream::stream()

@@ -45,7 +45,7 @@ Preferences::Preferences()
 		} else if(!stricmp(type, "string")) {
 			m = val;
 		} else {
-			DEBUG(basic) << "Unknown type in preferences file";
+			DEBUG(verb1) << "Unknown type in preferences file";
 		}
 	}
 }
