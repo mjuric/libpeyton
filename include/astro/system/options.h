@@ -102,7 +102,7 @@ namespace opt
 		bool showdefault;
 		#define CS(ty) binding(ty &v, bool sdef = true) : base("", 25), type(t_##ty), showdefault(sdef) { var.v_##ty = &v; }
 		#define CSN(ns, ty) binding(ns::ty &v, bool sdef = true) : base("", 25), type(t_##ty), showdefault(sdef) { var.v_##ty = &v; }
-		CS(double) CS(float) CS(short) CS(bool) CSN(std, string)
+		CS(int) CS(double) CS(float) CS(short) CS(bool) CSN(std, string)
 
 		binding() : type(unbound), base("", 25), showdefault(false) {}
 		binding(const binding &b) : base("", 25), var(b.var), type(b.type), showdefault(b.showdefault) {}

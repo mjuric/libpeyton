@@ -187,8 +187,8 @@ public:
 	bool operator!=(const Vector &v) const { return !((*this) == v); }
 
 	// member access
-	T& operator[](int i) { ASSERT(i >= 0 && i < D); return this->val[i]; }
-	const T operator[](int i) const { ASSERT(i >= 0 && i < D); return this->val[i]; }
+	T& operator[](int i) { return this->val[i]; }
+	const T operator[](int i) const { return this->val[i]; }
 
 	// geometry
 	/// project vector \c *this along vector \c a
@@ -246,6 +246,7 @@ public:
 
 // mathematical vector operations
 template<typename T, unsigned D> inline double abs(const Vector<T, D> &a) { return sqrt(double(dot(a, a))); }
+template<typename T, unsigned D> inline double sqr(const Vector<T, D> &a) { return double(dot(a, a)); }
 template<typename T, unsigned D> inline T dot(const Vector<T, D> &a, const Vector<T, D> &b) { T sum = 0; FOR(0, D) { sum += a[i]*b[i]; }; return sum; }
 template<typename T, unsigned D> inline T sum(const Vector<T, D> &a) { T sum = 0; FOR(0, D) { sum += a[i]; }; return sum; }
 

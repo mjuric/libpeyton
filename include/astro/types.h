@@ -20,6 +20,7 @@ typedef double Degrees;
 typedef double Radians;
 
 template<typename T> inline T sqr(T x) { return x*x; }
+template<typename T> inline T cube(const T &x) { return x*x*x; }
 template<typename T> inline int sgn(T x) { return x > 0 ? 1 : (x < 0 ? -1 : 0); }
 template<typename T> inline T sign(T a, T b) { return b >= 0 ? std::abs(a) : -std::abs(a); }
 

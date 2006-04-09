@@ -202,6 +202,6 @@ inline void fftw3d(int n, std::valarray<float> &scr, int iopt, char *wisdomfile 
 } // namespace image
 } // namespace peyton
 
-#define __peyton__image peyton::image
+#define __peyton_image peyton::image
 
 #endif

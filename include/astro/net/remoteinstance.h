@@ -108,12 +108,12 @@ int main_aux(int argc, char **argv) {
 		Instance *ins; char server[1000];
 
 		if(Instance::isClient(server, argc, argv)) {
-			DEBUG(basic) << "Starting client";
+			DEBUG(verb1) << "Starting client";
 			Client *cli = new Client;
 			cli->bindToServer(server);
 			ins = cli;
 		} else {
-			DEBUG(basic) << "Starting server";
+			DEBUG(verb1) << "Starting server";
 			ins = new Server;
 		}
 		ins->setArguments(argc, argv);

@@ -7,14 +7,17 @@ namespace constants {
 
 	const double pi = 3.14159265358979323846264338;
 	const double pi2 = 2*pi;
+	const double twopi = 2*pi;
+	const double piby2 = pi/2.;
 	const double ln10 = 2.3025850929940456840;	// ln(10)
 
 	const double d2r = pi/180.0;
 	const double s2r = pi/(180.0*3600);
 
-	/// sunmass.h: gravitational  constant: units, mass of the Sun, day, AU
-	const double gk = 0.01720209895;
-	const double gms = gk*gk;
+	// sunmass.h: Gaussian gravitational constant "k"
+	const double gk = 0.01720209895; ///< k = sqrt(G) in units of Solar mass, days, AU
+	const double gms = gk*gk;	///< k^2 = G in units of Solar mass, days, AU
+	const double k2 = gms;		///< k^2 = G in units of Solar mass, days, AU
 
 	// physical constants
 	const double c = 299792458; ///< speed of light, [m/s]

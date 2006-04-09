@@ -1,5 +1,5 @@
 //
-// $Id: streambuf.h,v 1.1 2004/02/27 13:32:59 mjuric Exp $ 
+// $Id: streambuf.h,v 1.2 2006/04/09 15:08:01 mjuric Exp $ 
 //  
 //  gzstream::streambuf
 //  Copyright (C) 2002 Christian Holm Christensen <cholm@nbi.dk> 
@@ -121,15 +121,15 @@ namespace gzstream
     /*@}*/
   public:
     /** Constructor. */
-    basic_streambuf() : streambuf_type() { setbuf(0, 0); };
+    basic_streambuf() : streambuf_type() { this->setbuf(0, 0); };
     /** Constrcutor with an explicit zlib gzFile argument. 
 	This constructor is non-standard. 
 	@param fp A zlib gzFile pointer. */
-    basic_streambuf(gzFile fp) : streambuf_type(), _file(fp) { setbuf(0, 0); }
+    basic_streambuf(gzFile fp) : streambuf_type(), _file(fp) { this->setbuf(0, 0); }
     /** Constrcutor with a gzipped filename argument. 
 	This constructor is non-standard. 
 	@param fn A zlib gzipped file filename. */
-    basic_streambuf(const char *fn, std::ios_base::openmode mode) : streambuf_type(), _file(0) { setbuf(0, 0); open(fn, mode); }
+    basic_streambuf(const char *fn, std::ios_base::openmode mode) : streambuf_type(), _file(0) { this->setbuf(0, 0); open(fn, mode); }
     /** Destructor. */
     virtual ~basic_streambuf() {}
     /** @name std::basic_filebuf interface. 

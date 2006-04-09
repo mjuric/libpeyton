@@ -4,8 +4,8 @@
 // Ripped it off from GCC 3.3.1 <memory> header
 //
 
-#ifndef __peyton_auto_ptr_h
-#define __peyton_auto_ptr_h
+#ifndef lp__auto_ptr_h
+#define lp__auto_ptr_h
 
 #include <string>
 

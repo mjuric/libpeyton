@@ -130,7 +130,7 @@ ImageBase<T> &mapTransform(
 	out.setOrigin(minn);
 	out.setScale(dx);
 
-	DEBUG(verbose) << "map [ size = " << size << ", origin = " << minn << ", scale = " << dx << " ]";
+	DEBUG(verb1) << "map [ size = " << size << ", origin = " << minn << ", scale = " << dx << " ]";
 
 	double offset[4][2] = { {0, 0}, {dx, 0}, {dx, dx}, {0, dx} };
 
