@@ -21,6 +21,7 @@
 #include <astro/compat/compat.h>
 #include <astro/system/error.h>
 #include <astro/util.h>
+#include <astro/types.h>
 
 #include <iosfwd>
 #include <cmath>
@@ -234,7 +235,7 @@ public:
 	}
 
 	// 3D cylindrical radius
-	T rho() const { DIM(3); return sqrt(sqr(this->x)+sqr(this->y)); }
+	T rho() const { DIM(3); return sqrt(peyton::sqr(this->x)+peyton::sqr(this->y)); }
 
 	T theta() const { DIM(3); return acos(this->z / abs(*this)); }
 	T lat() const { DIM(3); return peyton::ctn::pi/2. - theta(); }
