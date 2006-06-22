@@ -19,7 +19,7 @@
   <kdevautoproject>
     <general>
       <activetarget>src/libpeyton.a</activetarget>
-      <useconfiguration>debug</useconfiguration>
+      <useconfiguration>optimized</useconfiguration>
     </general>
     <run>
       <mainprogram>src/libpeytondemo</mainprogram>
