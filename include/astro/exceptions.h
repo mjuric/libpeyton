@@ -38,12 +38,34 @@ DERIVE_EXCEPTION(EMyException, EAny);
 /// Macro for deriving exceptions from EIOException
 #define IO_EXCEPTION(ex) DERIVE_EXCEPTION(ex, peyton::exceptions::EIOException)
 
+namespace peyton { namespace exceptions {
+	class EAny;
+
+	extern int exceptionRaised;
+	void log_exception(const EAny &e) throw();
+
+	template<typename E, typename INF>
+	void do_throw(const INF &inf, const char *PF, const char *F, int L) throw(E)
+	{
+		E e(inf, __PRETTY_FUNCTION__, __FILE__, __LINE__);
+		if(!peyton::exceptions::exceptionRaised)
+		{
+			peyton::exceptions::exceptionRaised++;
+			e.thrown = true;
+			throw e;
+		}
+		else
+		{
+			log_exception(e);
+		}
+	}
+} }
 /**
 	\brief The preferred way to throw EAny derived exceptions
 		
 	Use this macro instead of C++ throw keyword.
 */
-#define THROW(ex, inf) throw ex(inf, __PRETTY_FUNCTION__, __FILE__, __LINE__)
+#define THROW(ex, inf) peyton::exceptions::do_throw<ex>(inf, __PRETTY_FUNCTION__, __FILE__, __LINE__);
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -58,6 +80,10 @@ namespace exceptions {
 		All exceptions are derived from this class.
 	*/
 	class EAny {
+	protected:
+		bool thrown;
+		template<typename E, typename INF>
+		friend void do_throw(const INF &inf, const char *PF, const char *F, int L) throw(E);
 	public:
 		std::string info;	///< Descriptive information about the exception (eg. "File not found")
 
@@ -65,9 +91,12 @@ namespace exceptions {
 		std::string func,	///< Function from which this exception was thrown.
 				file; ///< Source file containing the function from which the exception was thrown
 	public:
-		EAny(std::string inf, std::string fun, std::string f, int l) : info(inf), func(fun), file(f), line(l) { }
-		void print() throw();
-		operator std::string();
+		EAny(std::string inf, std::string fun, std::string f, int l) : info(inf), func(fun), file(f), line(l), thrown(false) { }
+		EAny(const EAny &b);
+		void print() const throw();
+		operator std::string() const;
+
+		~EAny() throw();
 	private:
 		/**
 			Empty constructor is hidden because we want to enforce passing descriptive

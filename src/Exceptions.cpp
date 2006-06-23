@@ -12,12 +12,14 @@ using namespace peyton::system;
 using namespace peyton::util;
 using namespace peyton::exceptions;
 
-void EAny::print() throw()
+int peyton::exceptions::exceptionRaised = 0;
+
+void EAny::print() const throw()
 {
 	DEBUG(exception) << (std::string)(*this);
 }
 
-EAny::operator std::string()
+EAny::operator std::string() const
 {
 	std::ostringstream s;
 	s << io::format("[%s] : %s (at %s:%d)") << type_name(*this) << info << file << line;
@@ -31,3 +33,25 @@ EErrno::EErrno(std::string inf, std::string fun, std::string f, int l)
 	err = errno;
 }
 
+EAny::~EAny() throw()
+{
+	if(thrown) { peyton::exceptions::exceptionRaised--; } // std::cerr << "Decremented exceptionRaised to " << peyton::exceptions::exceptionRaised << "\n"; }
+}
+
+EAny::EAny(const EAny &b)
+{
+	// std::cerr << "Copy constructor.\n";
+
+	info = b.info;
+	line = b.line;
+	func = b.func;
+	file = b.file;
+	thrown = b.thrown;
+	
+	if(thrown) { peyton::exceptions::exceptionRaised++; } //std::cerr << "Inc. er = " << exceptionRaised << "\n";}
+}
+
+void peyton::exceptions::log_exception(const EAny &e) throw()
+{
+	 DEBUG(exception) << "[throw suppressed]  " << (const std::string)e;
+}
