@@ -97,15 +97,16 @@ public:
 struct DMMBlock
 {
 	long long begin;	// long memory index to which 'offset' corresponds to (in bytes)
-	std::string path;	// path to the file where this block resides
-	int fileoffset;		// offset where DMM data begins (in bytes)
+	std::string base; // base path to where this block's file resides
+	std::string path;	// name of the file where this block resides
+	int fileoffset;	// offset where DMM data begins (in bytes)
 	int length;		// length of DMM data (in bytes)
 
 	int fd;			// file descriptor linked to this DMMBlock - used my DMM* classes below
 	
 	DMMBlock() : begin(0), fileoffset(0), length(0), fd(0) {}
-	DMMBlock(long long begin_, const std::string &path_, int offset_, int length_)
-		: begin(begin_), path(path_), fileoffset(offset_), length(length_), fd(0)
+	DMMBlock(long long begin_, const std::string &path_, const std::string &base_, int offset_, int length_)
+		: begin(begin_), path(path_), base(base_), fileoffset(offset_), length(length_), fd(0)
 	{}
 
 	int openfile(int openmode);
@@ -123,6 +124,7 @@ protected:
 	int maxfilelen;		/// maximum length of data in a file (in bytes)
 	
 	std::string prefix;	// prefix of storage files
+	std::string base;		// base path where this set resides
 	const int recordsize;		// size of each record
 
 	long long arraysize;	// in records
@@ -293,6 +295,7 @@ public:
 		DMMASSERT(idx >= 0 && idx < capacity());
 		//ASSERT(writable() || idx < size());
 		if(!(writable() || idx < size())) { std::cerr << "ASSF: " << idx << " " << size() << "\n";}
+
 		T &tmp = *(T *)get(tooffset(idx), sizeof(T));
 		if(idx >= dmm.size()) { dmm.setsize(idx+1); }
 		return tmp;

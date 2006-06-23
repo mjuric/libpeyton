@@ -36,18 +36,24 @@ int DMMBlock::openfile(int openmode)
 {
 	if(fd != 0) { return fd; }
 
-	fd = ::open(path.c_str(), openmode, 0644);	// TODO: This with specifying the umask is a hack...
-	if(fd == -1) { THROW(EIOException, string("Error opening file [") + path + "]"); }
+	std::string fullpath = base + path;
 
+	int fd2 = ::open(fullpath.c_str(), openmode, 0644);	// TODO: This with specifying the umask is a hack...
+	if(fd2 == -1)
+	{
+		THROW(EIOException, string("Error opening file [") + fullpath + "]");
+	}
+
+	fd = fd2;
 	return fd;
 }
 
 void DMMBlock::closefile()
 {
 	if(!fd) return;
-		
-	if(::close(fd) == -1) { THROW(EIOException, string("Error closing file [") + path + "]"); }
-	
+
+	if(::close(fd) == -1) { THROW(EIOException, string("Error closing file [") + base + path + "]"); }
+
 	fd = 0;
 }
 
@@ -114,7 +120,7 @@ DMMBlock &DMMSet::addblock(int length, int offset, const std::string &file)
 	}
 
 	long long begin = blocks.size() ? last(blocks).begin + last(blocks).length : 0;
-	DMMBlock block(begin, file, offset, length*recordsize);
+	DMMBlock block(begin, file, base, offset, length*recordsize);
 
 	if(!file.size())
 	{
@@ -132,8 +138,8 @@ void DMMSet::truncate()
 
 	FOREACH2(blocks_t::iterator, blocks)
 	{
-		const char *fn = (*i).second.path.c_str();
-		unlink(fn);
+		std::string fn = base + (*i).second.path;
+		unlink(fn.c_str());
 	}
 
 	close();
@@ -240,7 +246,7 @@ bool DMMSet::load(const std::string &cfgfn)
 		// global config
 		if(!cfg.count("prefix")) { THROW(EDMMException, "No 'prefix' keyword found in DMM file"); }
 		prefix = cfg["prefix"];
-		
+
 		if(!cfg.count("recordsize")) { THROW(EDMMException, "No 'recordsize' keyword found in DMM file"); }
 		ASSERT(recordsize == (int)cfg["recordsize"]);
 	
@@ -259,6 +265,12 @@ bool DMMSet::load(const std::string &cfgfn)
 			autooffset = (int)cfg["autooffset"];
 		}
 
+		// deduce the directory from cfgfn. This will be used to construct absolute paths
+		// to DMMBlocks
+		int pos = cfgfn.rfind('/');
+		base = pos == string::npos ? "" : cfgfn.substr(0, pos+1);
+		//std::cerr << "BASE:: = " << base << " [" << cfgfn << "]\n";
+
 		// load blocks
 		for(int k = 1; true; k++)
 		{
@@ -266,7 +278,7 @@ bool DMMSet::load(const std::string &cfgfn)
 			
 			if(!cfg.count(prefix + "path")) break;
 			string path = cfg[prefix + "path"];
-	
+
 			if(!cfg.count(prefix + "offset")) { THROW(EDMMException, "No " + prefix + "offset" + " keyword found in DMM file"); }
 			int offset = cfg[prefix + "offset"];
 
@@ -275,10 +287,10 @@ bool DMMSet::load(const std::string &cfgfn)
 
 			if(!cfg.count(prefix + "length")) { THROW(EDMMException, "No " + prefix + "length" + " keyword found in DMM file"); }
 			long long length = cfg[prefix + "length"];
-			
-			addblock(DMMBlock(begin*recordsize, path, offset, length*recordsize));
+
+			addblock(DMMBlock(begin*recordsize, path, base, offset, length*recordsize));
 		}
-		
+
 		return true;
 	}
 	catch(EFile &e)
@@ -309,6 +321,7 @@ DMMBlock &DMMSet::autoaddblock(long long byteidx, DMMBlock *before, DMMBlock *af
 	ASSERT(b.begin <= byteidx && byteidx < b.begin + b.length);
 	
 	// generate a filename
+	b.base = base;
 	b.path = b.generatepathname(prefix, recordsize);
 
 	return addblock(b);
