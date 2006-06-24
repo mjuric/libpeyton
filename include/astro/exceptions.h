@@ -47,7 +47,7 @@ namespace peyton { namespace exceptions {
 	template<typename E, typename INF>
 	void do_throw(const INF &inf, const char *PF, const char *F, int L) throw(E)
 	{
-		E e(inf, __PRETTY_FUNCTION__, __FILE__, __LINE__);
+		E e(inf, PF, F, L);
 		if(!peyton::exceptions::exceptionRaised)
 		{
 			peyton::exceptions::exceptionRaised++;
