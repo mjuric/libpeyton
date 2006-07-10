@@ -160,7 +160,7 @@ public:
 	Option &required()	{ parameter = Option::Required; return *this; }
 	Option &optional()	{ parameter = Option::Optional; return *this; }
 	Option &value(const std::string &val)     { optval = val; return *this; }
-	Option &def_value(const std::string &val) { defaultvalue = val; hasdefaultvalue = true; return *this; }
+	Option &def_val(const std::string &val)   { defaultvalue = val; hasdefaultvalue = true; return *this; }
 	Option &desc(const std::string &val)      { description = val; return *this; }
 	template<typename T>
 	Option &bind(T &var) { this->variable.reset(new opt::binding<T>(var)); return *this; }

@@ -747,7 +747,7 @@ int test_options(int argc, char **argv)
 {
 try {
 	std::string argv0 = argv[0];
-	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.6 2006/07/10 17:42:55 mjuric Exp $");
+	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.7 2006/07/10 19:15:31 mjuric Exp $");
 	std::string progdesc = "libpeytondemo, a mock star catalog generator.";
 
 	//
@@ -777,7 +777,7 @@ try {
 
 	sopts["footprint"] = new Options(argv0 + " footprint", progdesc + " Footprint generation subcommand.", version, Authorship::majuric);
 	sopts["footprint"]->argument("conf").bind(conf).desc("Configuration file for the Bahcall-Soneira model, or if cmd=footprint, the file with the set of runs for which to calculate footprint.");
-	sopts["footprint"]->argument("output").bind(output).def_value("xx.txt").optional().desc("Name of the output file (needed for cmd='pdf')");
+	sopts["footprint"]->argument("output").bind(output).def_val("xx.txt").optional().desc("Name of the output file (needed for cmd='pdf')");
 	sopts["footprint"]->option("p").addname("xparam").addname("wparam").bind(wparam).param_required().desc("An integer option requiring a parameter. This is intentionaly longer than it should be.\nAnd here is a new paragraph now. Blabla new paragraph that is long.");
 	sopts["footprint"]->option("d").addname("ddlong").addname("ddlong2").bind(d).value("false").desc("A boolean switch");
 	sopts["footprint"]->option("strval").bind(strval).param_required().desc("A string with optional value");
@@ -825,7 +825,7 @@ try {
 	//
 	// Program version information
 	//
-	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.6 2006/07/10 17:42:55 mjuric Exp $");
+	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.7 2006/07/10 19:15:31 mjuric Exp $");
 	std::string progdesc = "libpeytondemo, a mock star catalog generator.";
 
 	//
@@ -850,7 +850,7 @@ try {
 		);
 	opts.add_standard_options();
 	opts.argument("conf").bind(conf).desc("Configuration file for the Bahcall-Soneira model, or if cmd=footprint, the file with the set of runs for which to calculate footprint.");
-	opts.argument("output").bind(output).def_value("xx.txt").optional().desc("Name of the output file (needed for cmd='pdf')");
+	opts.argument("output").bind(output).def_val("xx.txt").optional().desc("Name of the output file (needed for cmd='pdf')");
 	opts.option("wparam").bind(wparam).param_required().desc("An integer option requiring a parameter. This is intentionaly longer than it should be.\nAnd here is a new paragraph now. Blabla new paragraph that is long.");
 	opts.option("d").addname("ddlong").addname("ddlong2").bind(d).value("false").desc("A boolean switch");
 	opts.option("strval").bind(strval).param_required().desc("A string with optional value");
