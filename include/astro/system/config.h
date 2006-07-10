@@ -3,6 +3,8 @@
 
 #include <string>
 #include <map>
+#include <sstream>
+#include <vector>
 
 namespace peyton {
 namespace system {
@@ -55,6 +57,21 @@ var4 = To expand a key with spaces, enclose it in curly braces, eg ${key with sp
 			operator double() const { return vdouble(); }
 			operator float() const { return vfloat(); }
 			operator bool() const { return vbool(); }
+
+			template<typename A, typename B>
+			operator std::pair<A, B>() const
+			{
+				std::pair<A, B> p;
+				std::istringstream ss(*this);
+				ss >> p.first >> p.second;
+				return p;
+			}
+
+			template<typename T>
+			int vvector(std::vector<T> &v) const;
+
+			template<typename T>
+			operator std::vector<T>() const { std::vector<T> v; vvector(v); return v; }
 
 			Variant(const std::string &s = "") : std::string(s) {}
 		};
@@ -124,6 +141,18 @@ string z = config["string_value"];
 		}
 	};
 
+	template<typename T>
+	int Config::Variant::vvector(std::vector<T> &v) const
+	{
+		std::istringstream s(*this);
+		T val;
+		v.clear();
+		while(s >> val)
+		{
+			v.push_back(val);
+		}
+		return v.size();
+	}
 }
 }
 

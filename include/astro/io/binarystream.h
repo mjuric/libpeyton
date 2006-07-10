@@ -235,7 +235,7 @@ namespace io {
 					//this->init(io.rdbuf());
 				}
 		};
-	
+
 	
 	
 	

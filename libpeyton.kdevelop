@@ -12,21 +12,21 @@
     </keywords>
     <projectdirectory>.</projectdirectory>
     <absoluteprojectpath>false</absoluteprojectpath>
-    <description/>
+    <description></description>
     <ignoreparts/>
     <secondaryLanguages/>
   </general>
   <kdevautoproject>
     <general>
-      <activetarget>src/libpeyton.a</activetarget>
-      <useconfiguration>optimized</useconfiguration>
+      <activetarget>src/libpeytondemo</activetarget>
+      <useconfiguration>debug</useconfiguration>
     </general>
     <run>
       <mainprogram>src/libpeytondemo</mainprogram>
       <terminal>true</terminal>
       <directoryradio>executable</directoryradio>
       <customdirectory>/</customdirectory>
-      <programargs/>
+      <programargs>footprint</programargs>
       <autocompile>true</autocompile>
       <envvars/>
       <runarguments>
@@ -94,6 +94,7 @@
       <numberofjobs>1</numberofjobs>
       <dontact>false</dontact>
       <makebin/>
+      <prio>0</prio>
     </make>
   </kdevautoproject>
   <kdevfilecreate>
@@ -158,12 +159,12 @@
   </cppsupportpart>
   <kdevdebugger>
     <general>
-      <programargs/>
-      <gdbpath/>
-      <dbgshell/>
-      <configGdbScript/>
-      <runShellScript/>
-      <runGdbScript/>
+      <programargs></programargs>
+      <gdbpath></gdbpath>
+      <dbgshell></dbgshell>
+      <configGdbScript></configGdbScript>
+      <runShellScript></runShellScript>
+      <runGdbScript></runGdbScript>
       <breakonloadinglibs>true</breakonloadinglibs>
       <separatetty>false</separatetty>
       <floatingtoolbar>false</floatingtoolbar>

@@ -4,6 +4,7 @@
 
 #include <astro/sdss/photometry.h>
 #include <astro/exceptions.h>
+#include <astro/system/options.h>
 #include <iostream>
 
 #include <astro/math.h>
@@ -11,6 +12,7 @@
 #include <astro/useall.h>
 using namespace std;
 
+int test_options(int argc, char **argv);
 int demo_binarystream();
 int main_diskmemorymodel(int argc, char *argv[]);
 int main_fpnumber(int argc, char *argv[]);
@@ -54,9 +56,10 @@ void moduloTest()
 
 int main(int argc, char *argv[])
 {
-	return 0;
+	//return 0;
 	//moduloTest(); return 0;
 
+	return test_options(argc, argv);
 	return demo_binarystream();
 	return main_fpnumber(argc, argv);
 	return main_diskmemorymodel(argc, argv);
