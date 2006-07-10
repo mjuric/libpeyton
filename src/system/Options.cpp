@@ -102,13 +102,13 @@ bool Option::notify(const std::string &s)
 struct version_tag {} t_version;
 struct help_tag {} t_help;
 
-bool opt::binding2<version_tag>::setvalue(const std::string &s)
+bool opt::binding<version_tag>::setvalue(const std::string &s)
 {
 	THROW(EOptionsVersion, "");
 	return false;
 }
 
-bool opt::binding2<help_tag>::setvalue(const std::string &s)
+bool opt::binding<help_tag>::setvalue(const std::string &s)
 {
 	THROW(EOptionsHelp, "");
 	return false;
@@ -308,7 +308,7 @@ std::string argapp(const Option &o, const std::string &sep = "=")
 
     namespace parformat {
 
-    	int split(std::vector<std::string> &chunks, const std::string &text, const std::string &sep = "\n")
+    	int split(std::list<std::string> &chunks, const std::string &text, const std::string &sep = "\n")
 	{
 		chunks.clear();
 		size_t pos0 = 0, pos;
@@ -325,8 +325,9 @@ std::string argapp(const Option &o, const std::string &sep = "=")
         void format_paragraph(std::ostream& os,
                               std::string par,
                               unsigned first_column_width,
-                              unsigned line_length)
-        {                    
+                              unsigned line_length,
+			      std::list<string> *leftpars = NULL)
+        {
             // index of tab (if present) is used as additional indent relative
             // to first_column_width if paragrapth is spanned over multiple
             // lines if tab is not on first line it is ignored
@@ -436,11 +437,18 @@ std::string argapp(const Option &o, const std::string &sep = "=")
                     if (line_end != par_end)
                     {
                         os << '\n';
-                
-                        for(unsigned pad = indent; pad > 0; --pad)
-                        {
-                            os.put(' ');
-                        }                                                        
+
+			unsigned pad = indent;
+			if(leftpars && !leftpars->empty())
+			{
+				os << leftpars->front();
+				pad -= leftpars->front().size();
+				leftpars->erase(leftpars->begin());
+			}
+			for(; pad > 0; --pad)
+			{
+				os.put(' ');
+			}                    
                     }
               
                     // next line starts after of this line
@@ -452,7 +460,8 @@ std::string argapp(const Option &o, const std::string &sep = "=")
         void format_description(std::ostream& os,
                                 const std::string& desc, 
                                 unsigned first_column_width,
-                                unsigned line_length)
+                                unsigned line_length,
+				const std::string& lefttext)
         {
             // we need to use one char less per line to work correctly if actual
             // console has longer lines
@@ -466,28 +475,52 @@ std::string argapp(const Option &o, const std::string &sep = "=")
             // this assert may fail due to user error or environment conditions!
             assert(line_length > first_column_width);
 
-	    vector<string> paragraphs;
+	    list<string> paragraphs, leftpars;
 	    split(paragraphs, desc);
-            vector<string>::iterator par_iter = paragraphs.begin();                
-            vector<string>::iterator par_end = paragraphs.end();
+	    bool indent = true;
+	    if(lefttext.size())
+	    {
+		split(leftpars, lefttext);
+		indent = false;
+	    }
+            list<string>::iterator par_iter = paragraphs.begin();                
+            list<string>::iterator par_end = paragraphs.end();
             while (par_iter != par_end)  // paragraphs
             {
+                // print the first line of left column
+		unsigned pad = first_column_width;
+		if(!leftpars.empty())
+		{
+			os << leftpars.front();
+			pad -= leftpars.front().size();
+			leftpars.erase(leftpars.begin());
+		}
+		if(!indent)
+		{
+			for(; pad > 0; --pad)
+			{
+				os.put(' ');
+			}
+		}
+		indent = false;
+
+		// rest of the paragraph
                 format_paragraph(os, *par_iter, first_column_width, 
-                                 line_length);
-            
+                                 line_length, &leftpars);
                 ++par_iter;
-            
-                // prepair next line if any
+
+		// next line
                 if (par_iter != par_end)
                 {
                     os << "\n";
-              
-                    for(unsigned pad = first_column_width; pad > 0; --pad)
-                    {
-                        os.put(' ');
-                    }                    
-                }            
+		}
             }  // paragraphs
+
+	    // write remaining left column text
+	    FOREACH(leftpars)
+	    {
+	    	os << "\n" << *i;
+	    }
         }
     
 /*        void format_one(std::ostream& os, const option_description& opt, 
@@ -575,7 +608,7 @@ std::ostream &Options::help(std::ostream &out)
 			out << l;
 
 			if(l.size() < maxlen) { out << string(maxlen - l.size(), ' '); }
-			parformat::format_description(out, args[j].description, maxlen, 78);
+			parformat::format_description(out, args[j].description, maxlen, 78, "");
 			out << "\n";
 		}
 	}
@@ -599,9 +632,11 @@ std::ostream &Options::help(std::ostream &out)
 				std::string &name = o.name[j];
 
 				ostringstream line;
-				line << (prevshort ? ", " : "   ");
+				line << (prevshort ? " " : "   ");
 				line << (name.size() == 1 ? "-" : "--") << name;
 				line << argapp(o, (name.size() == 1 ? "" : "="));
+				if(j+1 != o.name.size()) { line << ","; }
+
 				std::string l = line.str();
 				lastlen = (prevshort ? lastlen : 0) + l.size();
 				maxlen = std::max(maxlen, lastlen);
@@ -622,8 +657,8 @@ std::ostream &Options::help(std::ostream &out)
 			Option &o = options[j];
 
 			// left column
-			out << l.first;
-			if(l.first.size() < maxlen) { out << string(maxlen - l.second, ' '); }
+			//out << l.first;
+			//if(l.second < maxlen) { out << string(maxlen - l.second, ' '); }
 
 			// right column
 			ostringstream desc;
@@ -632,7 +667,7 @@ std::ostream &Options::help(std::ostream &out)
 			{
 				desc << " (default '" << o.optval << "')";
 			}
-			parformat::format_description(out, desc.str(), maxlen, 78);
+			parformat::format_description(out, desc.str(), maxlen, 78, l.first);
 			out << "\n";
 		}
 	}
@@ -712,7 +747,7 @@ int test_options(int argc, char **argv)
 {
 try {
 	std::string argv0 = argv[0];
-	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.5 2006/07/10 03:09:35 mjuric Exp $");
+	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.6 2006/07/10 17:42:55 mjuric Exp $");
 	std::string progdesc = "libpeytondemo, a mock star catalog generator.";
 
 	//
@@ -736,17 +771,17 @@ try {
 		"        pdf - \tcalculate cumulative probability density functions (CPDF) for a given model and footprint\n"
 		"    catalog - \tcreate a mock catalog given a set of CPDFs\n"
 		);
-	opts.add_standard_options();
 	opts.stop_after_final_arg = true;
 	opts.prolog = "For detailed help on a particular subcommand, do `libpeytondemo <cmd> -h'";
+	opts.add_standard_options();
 
 	sopts["footprint"] = new Options(argv0 + " footprint", progdesc + " Footprint generation subcommand.", version, Authorship::majuric);
-	sopts["footprint"]->add_standard_options();
 	sopts["footprint"]->argument("conf").bind(conf).desc("Configuration file for the Bahcall-Soneira model, or if cmd=footprint, the file with the set of runs for which to calculate footprint.");
 	sopts["footprint"]->argument("output").bind(output).def_value("xx.txt").optional().desc("Name of the output file (needed for cmd='pdf')");
-	sopts["footprint"]->option("wparam").bind(wparam).param_required().desc("An integer option requiring a parameter. This is intentionaly longer than it should be.\nAnd here is a new paragraph now. Blabla new paragraph that is long.");
-	sopts["footprint"]->option("d").bind(d).value("false").desc("A boolean switch");
+	sopts["footprint"]->option("p").addname("xparam").addname("wparam").bind(wparam).param_required().desc("An integer option requiring a parameter. This is intentionaly longer than it should be.\nAnd here is a new paragraph now. Blabla new paragraph that is long.");
+	sopts["footprint"]->option("d").addname("ddlong").addname("ddlong2").bind(d).value("false").desc("A boolean switch");
 	sopts["footprint"]->option("strval").bind(strval).param_required().desc("A string with optional value");
+	sopts["footprint"]->add_standard_options();
 
 	//
 	// Parse
@@ -790,7 +825,7 @@ try {
 	//
 	// Program version information
 	//
-	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.5 2006/07/10 03:09:35 mjuric Exp $");
+	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.6 2006/07/10 17:42:55 mjuric Exp $");
 	std::string progdesc = "libpeytondemo, a mock star catalog generator.";
 
 	//
@@ -817,7 +852,7 @@ try {
 	opts.argument("conf").bind(conf).desc("Configuration file for the Bahcall-Soneira model, or if cmd=footprint, the file with the set of runs for which to calculate footprint.");
 	opts.argument("output").bind(output).def_value("xx.txt").optional().desc("Name of the output file (needed for cmd='pdf')");
 	opts.option("wparam").bind(wparam).param_required().desc("An integer option requiring a parameter. This is intentionaly longer than it should be.\nAnd here is a new paragraph now. Blabla new paragraph that is long.");
-	opts.option("d").bind(d).value("false").desc("A boolean switch");
+	opts.option("d").addname("ddlong").addname("ddlong2").bind(d).value("false").desc("A boolean switch");
 	opts.option("strval").bind(strval).param_required().desc("A string with optional value");
 
 	//

@@ -22,8 +22,6 @@ namespace system {
 
 /**
 	\brief	Program description and versioning classes
-	
-	
 */
 
 struct Authorship
@@ -64,30 +62,28 @@ struct Version
 #define VERSION_DATETIME(ver, id) Version ver(std::string(id) + "\n            Built on " + std::string(__DATE__) + " " + __TIME__)
 
 class Option;
-#define NEWBINDING 1
+
 namespace opt
 {
-	struct binding
+	struct binding_base
 	{
 		std::string type;
 
 		virtual bool setvalue(const std::string &s) = 0;
-		virtual binding *clone() const = 0;
-// 		virtual std::string to_string() const = 0;
-// 		virtual bool hasdefaultvalue() const = 0;
+		virtual binding_base *clone() const = 0;
 
-		binding() {}
-		virtual ~binding() {};
+		binding_base() {}
+		virtual ~binding_base() {};
 	};
 
 	template<typename T>
-	struct binding2 : public binding
+	struct binding : public binding_base
 	{
 		T &var;
 		bool showdefault;
 
-		binding2(T &v, bool sdef = true) : binding(), var(v), showdefault(sdef) { type = type_name(var); }
-		binding2(const binding2 &b) : binding(), var(b.var), showdefault(b.showdefault) { type = type_name(var); }
+		binding(T &v, bool sdef = true) : binding_base(), var(v), showdefault(sdef) { type = type_name(var); }
+		binding(const binding &b) : binding_base(), var(b.var), showdefault(b.showdefault) { type = type_name(var); }
 
 		virtual bool setvalue(const std::string &s)
 		{
@@ -97,12 +93,12 @@ namespace opt
 
 		virtual binding *clone() const
 		{
-			return new binding2<T>(*this);
+			return new binding<T>(*this);
 		}
 	};
 
 	// specialize for bool
-	inline bool binding2<bool>::setvalue(const std::string &s)
+	inline bool binding<bool>::setvalue(const std::string &s)
 	{
 		std::string tmp;
 		std::istringstream ss(s);
@@ -112,10 +108,6 @@ namespace opt
 		if(tmp == "true" || tmp == "1") { var = 1; return true; }
 		return false;
 	}
-/*	inline std::string binding2<bool>::to_string() const
-	{
-		return var ? "true" : "false";
-	}*/
 };
 
 /**
@@ -135,7 +127,7 @@ public:
 		Optional = 2		///< Option may come with a parameter (when used arguments: argument is optional)
 	};
 
-	std::auto_ptr<opt::binding>		variable;	///< an option can be bound to a variable (preferred)
+	std::auto_ptr<opt::binding_base>	variable;	///< an option can be bound to a variable (preferred)
 	std::string				mapkey;		///< key to set in the map for this option (deprecated)
 
 	std::vector<std::string>		name;		///< option name
@@ -171,7 +163,7 @@ public:
 	Option &def_value(const std::string &val) { defaultvalue = val; hasdefaultvalue = true; return *this; }
 	Option &desc(const std::string &val)      { description = val; return *this; }
 	template<typename T>
-	Option &bind(T &var) { this->variable.reset(new opt::binding2<T>(var)); return *this; }
+	Option &bind(T &var) { this->variable.reset(new opt::binding<T>(var)); return *this; }
 };
 
 /**
@@ -295,9 +287,14 @@ protected:
 	std::ostream &summary(std::ostream &out);
 };
 
+/// parse options opt from (argc, argv), writing any errors to out
 void parse_options(Options &opts, int argc, char **argv, std::ostream &out = std::cerr);
-void parse_options(Options &opts, Options::option_list &optlist, std::ostream &out = std::cerr);
+/// parse options opt from (argc, argv), writing any errors to out, returning possibly unparsed options in optlist (if that has been enabled through opts.ignore_unknown())
 void parse_options(Options::option_list &optlist, Options &opts, int argc, char **argv, std::ostream &out = std::cerr);
+/// parse options opt from optlist, writing any errors to out. Successfully parsed options are removed from optlist
+void parse_options(Options &opts, Options::option_list &optlist, std::ostream &out = std::cerr);
+
+/// prints an option-parsing induced error in a standardized format
 void print_options_error(const std::string &err, Options &opts, std::ostream &out = std::cerr);
 
 } // namespace system
