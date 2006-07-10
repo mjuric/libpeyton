@@ -89,30 +89,15 @@ namespace opt
 		binding2(T &v, bool sdef = true) : binding(), var(v), showdefault(sdef) { type = type_name(var); }
 		binding2(const binding2 &b) : binding(), var(b.var), showdefault(b.showdefault) { type = type_name(var); }
 
-// 		bool hasdefaultvalue() const { return showdefault; }
-
 		virtual bool setvalue(const std::string &s)
 		{
 			std::istringstream ss(s);
 			return ss >> var;
 		}
 
-/*		virtual std::string to_string() const
-		{
-			std::ostringstream ss;
-			ss << var;
-			return ss.str();
-		}
-*/
 		virtual binding *clone() const
 		{
 			return new binding2<T>(*this);
-		}
-		
-		virtual void apply(Option &o) const;
-		virtual ~binding2()
-		{
-		//std::cerr << "Deleting binding2\n";
 		}
 	};
 
@@ -151,10 +136,10 @@ public:
 	};
 
 	std::auto_ptr<opt::binding>		variable;	///< an option can be bound to a variable (preferred)
-	std::string				key;		///< key to set in the map for this option (deprecated)
+	std::string				mapkey;		///< key to set in the map for this option (deprecated)
 
 	std::vector<std::string>		name;		///< option name
-	std::string				value;		///< value to be returned if the option was given on the command line but
+	std::string				optval;		///< value to be returned if the option was given on the command line but
 								///< either parameter=no or parameter=optional and no parameter was specified
 	Parameter parameter;					///< does the option take a parameter?
 	std::string				description;	///< description of this option
@@ -167,60 +152,27 @@ protected:
 	bool notify(const std::string &s);			///< set the value of a bound variable, if any. Called from Options::parse. return false if parsing unsuccessful.
 
 public:
-	Option(const Option &o)
-		: variable(o.variable.get() ? o.variable->clone() : NULL), key(o.key),
-		name(o.name), value(o.value),
-		parameter(o.parameter),
-		defaultvalue(o.defaultvalue), description(o.description),
-		hasdefaultvalue(o.hasdefaultvalue)
-	{
-	}
-	Option& operator=(const Option &o)
-	{
-		variable.reset(o.variable.get() ? o.variable->clone() : NULL);
-		key = o.key; name = o.name; value = o.value;
-		parameter = o.parameter; defaultvalue = o.defaultvalue; description = o.description;
-		hasdefaultvalue = o.hasdefaultvalue;
-
-		return *this;
-	}
-
 	Option() : parameter(None), hasdefaultvalue(false) {}
+
+	Option(const Option &o);
+	Option& operator=(const Option &o);
 
 	//
 	// property setters
 	//
-	Option &addname(const std::string &val)
-	{
-		name.push_back(val);
-		return *this;
-	}
-
-	Option &Key(const std::string &val) { key = val; return *this; }
+	Option &addname(const std::string &val) { name.push_back(val); return *this; }
+	Option &key(const std::string &val) { mapkey = val; return *this; }
 	Option &param_required()	{ parameter = Option::Required; return *this; }
 	Option &param_optional()	{ parameter = Option::Optional; return *this; }
 	Option &param_none()	{ parameter = Option::None; return *this; }
 	Option &required()	{ parameter = Option::Required; return *this; }
 	Option &optional()	{ parameter = Option::Optional; return *this; }
-	Option &Value(const std::string &val)     { value = val; return *this; }
+	Option &value(const std::string &val)     { optval = val; return *this; }
 	Option &def_value(const std::string &val) { defaultvalue = val; hasdefaultvalue = true; return *this; }
 	Option &desc(const std::string &val)      { description = val; return *this; }
-
 	template<typename T>
 	Option &bind(T &var) { this->variable.reset(new opt::binding2<T>(var)); return *this; }
 };
-
-template<typename T>
-	inline void opt::binding2<T>::apply(Option &o) const
-	{
-		o.variable.reset(clone());
-	}
-
-inline void opt::binding2<bool>::apply(Option &o) const
-{
-	o.variable.reset(clone());
-	o.value = "true";
-}
 
 /**
 	\brief	Command line options parsing
@@ -273,12 +225,13 @@ protected:
 	std::vector<Option> args, options;
 	std::string program;
 
-	std::string description;			///< Whole program description (will appear just above the generated usage())
+	std::string description;		///< Short program description (will appear just above the generated usage())
 	Version ver;
 	Authorship author;
 
 public:
 	bool stop_after_final_arg;		///< do not parse anything beyond the final positional argument
+	std::string prolog;			///< text which will appear on the bottom of help() text
 
 	typedef std::list<const char *> option_list;
 
@@ -295,7 +248,7 @@ public:
 	{
 		options.push_back(Option());
 		return options.back()
-			.Key(name)
+			.key(name)
 			.addname(name)
 			.desc(desc)
 			.param_none();
@@ -307,7 +260,7 @@ public:
 	{
 		args.push_back(Option());
 		return args.back()
-			.Key(key)
+			.key(key)
 			.addname(key)
 			.desc(desc)
 			.param_required();
@@ -317,7 +270,7 @@ public:
 	void ignore_unknown(bool ignore) { ignore_unknown_opts = ignore; }
 
 	/// Parses the command line and loads the options, as specified by \a options argument
-	void parse(int argc, char **argv, option_list *unparsed = NULL);
+	void parse(int argc, char **argv, option_list *remainder = NULL);
 	void parse(option_list &options);
 
 	/// Returns \c true if the option \a o was present on the command line
@@ -327,20 +280,25 @@ public:
 	int arguments_found() { return nargs; }
 
 	/// Returns a human readable string describing the way to use the program, and the options avaliable
-	std::string help();
+	std::ostream &help(std::ostream &out);
 
 	/// Returns a short human readable summary describing the program, and instructions on how to get more help
-	std::string usage();
+	std::ostream &usage(std::ostream &out);
 	
 	/// Returns a short human readable version string and author summary
-	std::string version();
+	std::ostream &version(std::ostream &out);
 
 	void add_standard_options();
 protected:
 	bool handle_argument(const std::string &arg, Option *&o);
 	void store(Option &o, const std::string &value, const std::string &opt, bool is_argument);
-	std::string summary();
+	std::ostream &summary(std::ostream &out);
 };
+
+void parse_options(Options &opts, int argc, char **argv, std::ostream &out = std::cerr);
+void parse_options(Options &opts, Options::option_list &optlist, std::ostream &out = std::cerr);
+void parse_options(Options::option_list &optlist, Options &opts, int argc, char **argv, std::ostream &out = std::cerr);
+void print_options_error(const std::string &err, Options &opts, std::ostream &out = std::cerr);
 
 } // namespace system
 } // namespace peyton

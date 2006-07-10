@@ -27,6 +27,25 @@ Authorship Authorship::majuric("Mario Juric", "Mario Juric", "mjuric@astro.princ
 Authorship Authorship::unspecified("U. N. Specified", "U. N. Specified", "e-mail unspecified");
 Version Version::unspecified("version unspecified");
 
+Option::Option(const Option &o)
+	: variable(o.variable.get() ? o.variable->clone() : NULL), mapkey(o.mapkey),
+	name(o.name), optval(o.optval),
+	parameter(o.parameter),
+	defaultvalue(o.defaultvalue), description(o.description),
+	hasdefaultvalue(o.hasdefaultvalue)
+{ }
+
+Option& Option::operator=(const Option &o)
+{
+	variable.reset(o.variable.get() ? o.variable->clone() : NULL);
+	mapkey = o.mapkey; name = o.name; optval = o.optval;
+	parameter = o.parameter; defaultvalue = o.defaultvalue; description = o.description;
+	hasdefaultvalue = o.hasdefaultvalue;
+
+	return *this;
+}
+
+
 Options::Options(const std::string &argv0, const std::string &description_, const Version &version_, const Authorship &author_ ) 
 	: peyton::system::Config(), description(description_), ver(version_), author(author_), 
 	ignore_unknown_opts(false), stop_after_final_arg(false)
@@ -64,7 +83,7 @@ bool Options::handle_argument(const std::string &arg, Option *&o)
 void Options::store(Option &o, const std::string &value, const std::string &opt, bool is_argument)
 {
 	// store to string map
-	insert(make_pair(o.key, value));
+	insert(make_pair(o.mapkey, value));
 
 	// parse and store into bound variable
 	if(!o.notify(value))
@@ -131,7 +150,7 @@ void Options::parse(option_list &args)
 		// some courtesy sanity checking
 		ASSERT(!(o.hasdefaultvalue && o.parameter == Option::Required))
 		{
-			std::cerr << o.key << " has a default value '" << o.defaultvalue << "', but requires a parameter? This makes no sense because the parameter will always overwrite the default value.\n";
+			std::cerr << o.mapkey << " has a default value '" << o.defaultvalue << "', but requires a parameter? This makes no sense because the parameter will always overwrite the default value.\n";
 		}
 	}
 	bool inoptargs = false;
@@ -232,7 +251,7 @@ void Options::parse(option_list &args)
 					}
 				
 					// deduce option value
-					std::string value = argpos ? arg.substr(argpos) : o->value;
+					std::string value = argpos ? arg.substr(argpos) : o->optval;
 	
 					// parameter required but not supplied with option
 					if(!argpos && o->parameter == Option::Required)
@@ -265,7 +284,7 @@ void Options::parse(option_list &args)
 		i++;
 		if(succ)
 		{
-			options_found[o->key] = true;
+			options_found[o->mapkey] = true;
 			args.erase(k, i);
 		}
 	}
@@ -494,15 +513,8 @@ std::string argapp(const Option &o, const std::string &sep = "=")
             }*/
         }
 
-std::string Options::summary()
+std::ostream &Options::summary(std::ostream &out)
 {
-	ostringstream out;
-
-	if(!description.empty())
-	{
-		out << description << "\n";
-	}
-
 	out << "Usage: " << program << " ";
 	if(!args.empty())
 	{
@@ -512,37 +524,38 @@ std::string Options::summary()
 
 			if(i != args.begin())              { out << " "; }
 
-			if(o.parameter == Option::Required) { out << "<" + o.key << ">"; }
-			else                               { out << "[" + o.key << "]"; }
+			if(o.parameter == Option::Required) { out << "<" + o.name[0] << ">"; }
+			else                               { out << "[" + o.name[0] << "]"; }
 		}
 	}
 
-	return out.str();
+	return out;
 }
 
-std::string Options::usage()
+std::ostream &Options::usage(std::ostream &out)
 {
-	ostringstream out;
-	out << summary() << "\n\nTry `" << program << " --help' for more options.";
-	return out.str();
+	return summary(out) << "\n\nTry `" << program << " --help' for more options.";
 }
 
-std::string Options::version()
+std::ostream &Options::version(std::ostream &out)
 {
-	ostringstream out;
 	out << "Program   : " << program << "\n";
 	if(!description.empty()) { out << "Summary   : " << description << "\n"; }
 	out << std::string(ver) << "\n";
 	out << std::string(author) << "\n";
-	return out.str();
+	return out;
 }
 
-std::string Options::help()
+std::ostream &Options::help(std::ostream &out)
 {
-	std::ostringstream out;
 	out << "\n";
 	
-	out << summary() << "\n\n";
+	if(!description.empty())
+	{
+		out << description << "\n";
+	}
+
+	summary(out) << "\n\n";
 
 	if(!args.empty())
 	{
@@ -617,7 +630,7 @@ std::string Options::help()
 			desc << o.description;
 			if(o.parameter == Option::Optional)
 			{
-				desc << " (default '" << o.value << "')";
+				desc << " (default '" << o.optval << "')";
 			}
 			parformat::format_description(out, desc.str(), maxlen, 78);
 			out << "\n";
@@ -625,28 +638,97 @@ std::string Options::help()
 	}
 
 	out << "\n";
+	
+	if(prolog.size())
+	{
+		out << prolog << "\n\n";
+	}
 
-	return out.str();
+	return out;
 }
 
+namespace peyton {
+namespace system {
+	void print_options_error(const std::string &err, Options &opts, std::ostream &out)
+	{
+		out << ">>>  " << err << "\n";
+		opts.usage(out) << "\n";
+	}
+	
+	void parse_options(Options::option_list &optlist, Options &opts, int argc, char **argv, ostream &out)
+	{
+		try {
+			opts.parse(argc, argv, &optlist);
+		}
+		catch(EOptionsHelp &e) {
+			opts.help(out);
+			exit(0);
+		}
+		catch(EOptionsVersion &e)
+		{
+			opts.version(out);
+			exit(0);
+		}
+		catch(EOptions &e)
+		{
+			print_options_error(e.info, opts, out);
+			exit(-1);
+		}
+	}
+	
+	void parse_options(Options &opts, Options::option_list &optlist, ostream &out)
+	{
+		try {
+			opts.parse(optlist);
+		}
+		catch(EOptionsHelp &e) {
+			opts.help(out);
+			exit(0);
+		}
+		catch(EOptionsVersion &e)
+		{
+			opts.version(out);
+			exit(0);
+		}
+		catch(EOptions &e)
+		{
+			print_options_error(e.info, opts, out);
+			exit(-1);
+		}
+	}
+	
+	void parse_options(Options &opts, int argc, char **argv, ostream &out)
+	{
+		Options::option_list optlist;
+		return parse_options(optlist, opts, argc, argv, out);
+	}
+}
+}
 
 #define PRINT(v) \
-	std::cout << #v" = " << v << " (found = " << opts->found(#v) << ") " << " (opts.count = " << opts->count(#v) << ") ((*opts)[" #v "]) = " << (*opts)[#v] << "\n";
+	std::cout << #v" = " << v << " (found = " << sopts[cmd]->found(#v) << ") " << " (*sopts[cmd].count = " << sopts[cmd]->count(#v) << ") ((*sopts[cmd])[" #v "]) = " << (*sopts[cmd])[#v] << "\n";
 
 int test_options(int argc, char **argv)
 {
-	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.4 2006/07/10 02:06:00 mjuric Exp $");
-
+try {
+	std::string argv0 = argv[0];
+	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.5 2006/07/10 03:09:35 mjuric Exp $");
 	std::string progdesc = "libpeytondemo, a mock star catalog generator.";
 
+	//
+	// Declare option variables here
+	//
 	std::string cmd, conf, output;
 	int wparam = 3;
 	bool d = true;
 	std::string strval = "nostring";
 
-
-	Options main_opts(argv[0], progdesc, version, Authorship::majuric);
-	main_opts.argument("cmd").bind(cmd).desc(
+	//
+	// Option definitions
+	//
+	std::map<std::string, Options *> sopts;
+	Options opts(argv[0], progdesc, version, Authorship::majuric);
+	opts.argument("cmd").bind(cmd).desc(
 		"What to make. Can be one of:\n"
 		"  footprint - \tcalculate footprint of a set of runs on the sky\n"
 		"    pskymap - \tconstruct a partitioned sky map given a set of runs on the sky\n"
@@ -654,52 +736,107 @@ int test_options(int argc, char **argv)
 		"        pdf - \tcalculate cumulative probability density functions (CPDF) for a given model and footprint\n"
 		"    catalog - \tcreate a mock catalog given a set of CPDFs\n"
 		);
-	main_opts.add_standard_options();
+	opts.add_standard_options();
+	opts.stop_after_final_arg = true;
+	opts.prolog = "For detailed help on a particular subcommand, do `libpeytondemo <cmd> -h'";
 
-	std::string argv0 = argv[0];
-	std::map<std::string, Options *> sopts;
 	sopts["footprint"] = new Options(argv0 + " footprint", progdesc + " Footprint generation subcommand.", version, Authorship::majuric);
 	sopts["footprint"]->add_standard_options();
 	sopts["footprint"]->argument("conf").bind(conf).desc("Configuration file for the Bahcall-Soneira model, or if cmd=footprint, the file with the set of runs for which to calculate footprint.");
 	sopts["footprint"]->argument("output").bind(output).def_value("xx.txt").optional().desc("Name of the output file (needed for cmd='pdf')");
 	sopts["footprint"]->option("wparam").bind(wparam).param_required().desc("An integer option requiring a parameter. This is intentionaly longer than it should be.\nAnd here is a new paragraph now. Blabla new paragraph that is long.");
-	sopts["footprint"]->option("d").bind(d).Value("false").desc("A boolean switch");
+	sopts["footprint"]->option("d").bind(d).value("false").desc("A boolean switch");
 	sopts["footprint"]->option("strval").bind(strval).param_required().desc("A string with optional value");
 
-	Options *opts = &main_opts;
-	try {
-		Options::option_list optlist;
-		main_opts.stop_after_final_arg = true;
-		main_opts.parse(argc, argv, &optlist);
-
-		if(sopts.count(cmd))
-		{
-			opts = sopts[cmd];
-			opts->parse(optlist);
-		}
-		else
-		{
-			ostringstream ss;
-			ss << "Unrecognized subcommand `" << cmd << "'";
-			THROW(EOptions, ss.str());
-		}
-		PRINT(cmd);
-		PRINT(conf);
-		PRINT(output);
-		PRINT(wparam);
-		PRINT(d);
-		PRINT(strval);
-	}
-	catch(EOptionsHelp &e) {
-		cout << opts->help();
-		cout << "For detailed help on a particular subcommand, do `libpeytondemo <cmd> -h'\n\n";
-		return 0;
-	}
-	catch(EOptionsVersion &e) { cout << main_opts.version(); return 0; }
-	catch(EOptions &e)
+	//
+	// Parse
+	//
+	Options::option_list optlist;
+	parse_options(optlist, opts, argc, argv);
+	if(sopts.count(cmd))
 	{
-		cout << "\n>>>  " << e.info << "\n\n";
-		cout << opts->usage() << "\n";
+		parse_options(*sopts[cmd], optlist);
+	}
+	else
+	{
+		ostringstream ss;
+		ss << "Unrecognized subcommand `" << cmd << "'";
+		print_options_error(ss.str(), opts);
 		return -1;
 	}
+
+	//
+	// Your code starts here
+	//
+	PRINT(cmd);
+	PRINT(conf);
+	PRINT(output);
+	PRINT(wparam);
+	PRINT(d);
+	PRINT(strval);
+
+} catch(EAny &e) {
+	e.print();
+	return -1;
+}
+}
+
+#undef PRINT
+#define PRINT(v) \
+	std::cout << #v" = " << v << " (found = " << opts.found(#v) << ") " << " (opts.count = " << opts.count(#v) << ") ((opts)[" #v "]) = " << (opts)[#v] << "\n";
+int test_options_simple(int argc, char **argv)
+{
+try {
+	//
+	// Program version information
+	//
+	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.5 2006/07/10 03:09:35 mjuric Exp $");
+	std::string progdesc = "libpeytondemo, a mock star catalog generator.";
+
+	//
+	// Declare option variables here
+	//
+	std::string cmd, conf, output;
+	int wparam = 3;
+	bool d = true;
+	std::string strval = "nostring";
+
+	//
+	// Define options
+	//
+	Options opts(argv[0], progdesc, version, Authorship::majuric);
+	opts.argument("cmd").bind(cmd).desc(
+		"What to make. Can be one of:\n"
+		"  footprint - \tcalculate footprint of a set of runs on the sky\n"
+		"    pskymap - \tconstruct a partitioned sky map given a set of runs on the sky\n"
+		"       beam - \tcalculate footprint of a single conical beam\n"
+		"        pdf - \tcalculate cumulative probability density functions (CPDF) for a given model and footprint\n"
+		"    catalog - \tcreate a mock catalog given a set of CPDFs\n"
+		);
+	opts.add_standard_options();
+	opts.argument("conf").bind(conf).desc("Configuration file for the Bahcall-Soneira model, or if cmd=footprint, the file with the set of runs for which to calculate footprint.");
+	opts.argument("output").bind(output).def_value("xx.txt").optional().desc("Name of the output file (needed for cmd='pdf')");
+	opts.option("wparam").bind(wparam).param_required().desc("An integer option requiring a parameter. This is intentionaly longer than it should be.\nAnd here is a new paragraph now. Blabla new paragraph that is long.");
+	opts.option("d").bind(d).value("false").desc("A boolean switch");
+	opts.option("strval").bind(strval).param_required().desc("A string with optional value");
+
+	//
+	// Parse
+	//
+	parse_options(opts, argc, argv);
+
+	//
+	// Your code starts here
+	//
+	PRINT(cmd);
+	PRINT(conf);
+	PRINT(output);
+	PRINT(wparam);
+	PRINT(d);
+	PRINT(strval);
+
+} catch(EAny &e) {
+	e.print();
+	return -1;
+}
 }
