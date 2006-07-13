@@ -65,48 +65,92 @@ class Option;
 
 namespace opt
 {
-	struct binding_base
+	struct any
 	{
-		std::string type;
+	protected:
+		struct binding_data
+		{
+			virtual std::istream &setval(std::istream &in) = 0;
+			virtual std::ostream &getval(std::ostream &out) const = 0;
 
-		virtual bool setvalue(const std::string &s) = 0;
-		virtual binding_base *clone() const = 0;
+			virtual binding_data *clone() const = 0;
+			virtual std::string type() const = 0;
 
-		binding_base() {}
-		virtual ~binding_base() {};
+			virtual ~binding_data() {};
+		};
+
+	protected:
+		std::auto_ptr<binding_data> data;
+
+	public:
+		// binder constructors
+		template<typename T> any(T &t);
+		template<typename T> void reset(T &t);
+
+	public:
+		// accessors
+		std::string type() { return data.get() != NULL ? data->type() : ""; }
+		operator bool() { return data.get() != NULL; }
+		std::istream &setval(std::istream &in) { return data->setval(in); }
+		std::ostream &getval(std::ostream &out) { return data->getval(out); }
+
+	public:
+		// default constructor
+		any() {}
+
+		// copy constructor
+		any(const any &x)
+			: data(x.data.get() ? x.data->clone() : NULL)
+		{}
+		any &operator=(const any &x)
+		{
+			data.reset(x.data.get() ? x.data->clone() : NULL);
+			return *this;
+		}
 	};
 
 	template<typename T>
-	struct binding : public binding_base
+	struct binding : public any::binding_data
 	{
 		T &var;
-		bool showdefault;
+		binding(T &v) : var(v) { }
 
-		binding(T &v, bool sdef = true) : binding_base(), var(v), showdefault(sdef) { type = type_name(var); }
-		binding(const binding &b) : binding_base(), var(b.var), showdefault(b.showdefault) { type = type_name(var); }
+		virtual std::string type() const			{ return type_name(var); }
+		virtual std::istream &setval(std::istream &in)		{ return in >> var; }
+		virtual std::ostream &getval(std::ostream &out) const	{ return out << var; }
+		virtual binding *clone() const				{ return new binding<T>(*this); }
 
-		virtual bool setvalue(const std::string &s)
-		{
-			std::istringstream ss(s);
-			return ss >> var;
-		}
-
-		virtual binding *clone() const
-		{
-			return new binding<T>(*this);
-		}
+		virtual ~binding() {};
 	};
 
+	template<typename T>
+		void any::reset(T &t)
+		{
+			data.reset(new binding<T>(t));
+		}
+
+	template<typename T>
+		any::any(T &t)
+			: data(new binding<T>(t))
+		{}
+
 	// specialize for bool
-	inline bool binding<bool>::setvalue(const std::string &s)
+	inline std::istream &binding<bool>::setval(std::istream &in)
 	{
 		std::string tmp;
-		std::istringstream ss(s);
-		if(!(ss >> tmp)) { return false; }
-		
-		if(tmp == "false" || tmp == "0") { var = 0; return true; }
-		if(tmp == "true" || tmp == "1") { var = 1; return true; }
-		return false;
+		if(!(in >> tmp)) { return in; }
+
+		if(tmp == "false" || tmp == "0") { var = 0; return in; }
+		if(tmp == "true" || tmp == "1") { var = 1; return in; }
+
+		in.setstate(std::ios::failbit);
+		return in;
+	}
+
+	// specialize output for bool
+	inline std::ostream &binding<bool>::getval(std::ostream &out) const
+	{
+		out << var ? "true" : "false";
 	}
 };
 
@@ -127,7 +171,7 @@ public:
 		Optional = 2		///< Option may come with a parameter (when used arguments: argument is optional)
 	};
 
-	std::auto_ptr<opt::binding_base>	variable;	///< an option can be bound to a variable (preferred)
+	opt::any				variable;	///< an option can be bound to a variable (preferred)
 	std::string				mapkey;		///< key to set in the map for this option (deprecated)
 
 	std::vector<std::string>		name;		///< option name
@@ -136,15 +180,15 @@ public:
 	Parameter parameter;					///< does the option take a parameter?
 	std::string				description;	///< description of this option
 
-	std::string				defaultvalue;	///< if it was not specified on the command line, set the bound variable and hash map to this value
-	bool 					hasdefaultvalue;///< does this option have a default value
+	std::string				defval;		///< if it was not specified on the command line, set the hash map to this value.
+	bool					deffromvar;
 
 protected:
 	friend class Options;
 	bool notify(const std::string &s);			///< set the value of a bound variable, if any. Called from Options::parse. return false if parsing unsuccessful.
 
 public:
-	Option() : parameter(None), hasdefaultvalue(false) {}
+	Option() : parameter(None) {}
 
 	Option(const Option &o);
 	Option& operator=(const Option &o);
@@ -160,10 +204,32 @@ public:
 	Option &required()	{ parameter = Option::Required; return *this; }
 	Option &optional()	{ parameter = Option::Optional; return *this; }
 	Option &value(const std::string &val)     { optval = val; return *this; }
-	Option &def_val(const std::string &val)   { defaultvalue = val; hasdefaultvalue = true; return *this; }
 	Option &desc(const std::string &val)      { description = val; return *this; }
+
+	Option &def_val(const std::string &val)
+	{
+		if(!defval.empty())
+		{
+			using namespace peyton::exceptions;
+			THROW(EOptions, std::string("PROGRAM ERROR (please notify the author): Default value already set for option ") + name[0]);
+		}
+		defval = val; return *this;
+	}
+
 	template<typename T>
-	Option &bind(T &var) { this->variable.reset(new opt::binding<T>(var)); return *this; }
+		Option &bind(T &var, bool sdef = true)
+		{
+			this->variable.reset(var);
+			//std::cerr << "Setting " << name[0] << " "; this->variable.getval(std::cerr) << " (" << this->variable.type() << ")\n";
+			if(sdef)
+			{
+				std::ostringstream ss;
+				this->variable.getval(ss);
+				def_val(ss.str());
+				deffromvar = true;
+			}
+			return *this;
+		}
 };
 
 /**
@@ -221,6 +287,7 @@ protected:
 	Version ver;
 	Authorship author;
 
+	bool defoptsadded;			///< Default options have been added
 public:
 	bool stop_after_final_arg;		///< do not parse anything beyond the final positional argument
 	std::string prolog;			///< text which will appear on the bottom of help() text

@@ -28,19 +28,19 @@ Authorship Authorship::unspecified("U. N. Specified", "U. N. Specified", "e-mail
 Version Version::unspecified("version unspecified");
 
 Option::Option(const Option &o)
-	: variable(o.variable.get() ? o.variable->clone() : NULL), mapkey(o.mapkey),
+	: variable(o.variable), mapkey(o.mapkey),
 	name(o.name), optval(o.optval),
 	parameter(o.parameter),
-	defaultvalue(o.defaultvalue), description(o.description),
-	hasdefaultvalue(o.hasdefaultvalue)
+	defval(o.defval), description(o.description),
+	deffromvar(o.deffromvar)
 { }
 
 Option& Option::operator=(const Option &o)
 {
-	variable.reset(o.variable.get() ? o.variable->clone() : NULL);
+	variable = o.variable;
 	mapkey = o.mapkey; name = o.name; optval = o.optval;
-	parameter = o.parameter; defaultvalue = o.defaultvalue; description = o.description;
-	hasdefaultvalue = o.hasdefaultvalue;
+	parameter = o.parameter; defval = o.defval; description = o.description;
+	deffromvar = o.deffromvar;
 
 	return *this;
 }
@@ -48,7 +48,7 @@ Option& Option::operator=(const Option &o)
 
 Options::Options(const std::string &argv0, const std::string &description_, const Version &version_, const Authorship &author_ ) 
 	: peyton::system::Config(), description(description_), ver(version_), author(author_), 
-	ignore_unknown_opts(false), stop_after_final_arg(false)
+	ignore_unknown_opts(false), stop_after_final_arg(false), defoptsadded(false)
 {
 	//program = string(argv0 == NULL ? "program.x" : argv0);
 	program = argv0;
@@ -76,7 +76,7 @@ bool Options::handle_argument(const std::string &arg, Option *&o)
 	o = &args[nargs++];
 	ASSERT(o->name.size());
 	store(*o, arg, o->name[0], true);
-	
+
 	return true;
 }
 
@@ -89,35 +89,34 @@ void Options::store(Option &o, const std::string &value, const std::string &opt,
 	if(!o.notify(value))
 	{
 		std::string tmp = is_argument ? "argument" : "option";
-		THROW(EOptions, std::string("Error parsing the value of ") + tmp + " " + opt + ", " + o.variable->type + " expected.");
+		THROW(EOptions, std::string("Error parsing the value of ") + tmp + " " + opt + ", " + o.variable.type() + " expected.");
 	}
 }
 
 bool Option::notify(const std::string &s)
 {
-	if(!variable.get()) return true;
-	return variable->setvalue(s);
+	istringstream ss(s);
+	return variable.setval(ss);
 }
 
 struct version_tag {} t_version;
 struct help_tag {} t_help;
 
-bool opt::binding<version_tag>::setvalue(const std::string &s)
-{
-	THROW(EOptionsVersion, "");
-	return false;
-}
+std::istream &opt::binding<version_tag >::setval(std::istream &in) { THROW(EOptionsVersion, ""); }
+std::ostream &opt::binding<version_tag >::getval(std::ostream &out) const { out << "t_version"; }
 
-bool opt::binding<help_tag>::setvalue(const std::string &s)
-{
-	THROW(EOptionsHelp, "");
-	return false;
-}
+std::istream &opt::binding<help_tag >::setval(std::istream &in) { THROW(EOptionsHelp, ""); }
+std::ostream &opt::binding<help_tag >::getval(std::ostream &out) const { out << "t_help"; }
 
 void Options::add_standard_options()
 {
-	option("v").addname("version").bind(t_version).desc("Version and author information");
-	option("h").addname("help").bind(t_help).desc("This help page");
+	if(!defoptsadded)
+	{
+		option("v").addname("version").bind(t_version, false).desc("Version and author information");
+		option("h").addname("help").bind(t_help, false).desc("This help page");
+
+		defoptsadded = true;
+	}
 }
 
 void Options::parse(int argc, char **argv, option_list *unparsed)
@@ -133,13 +132,28 @@ void Options::parse(int argc, char **argv, option_list *unparsed)
 
 void Options::parse(option_list &args)
 {
+	// add standard options, if they were not already added
+	add_standard_options();
+
 	// create option lookup maps and set default values
 	shortOptMap.clear(); longOptMap.clear();
 	FOREACH(options)
 	{
 		Option &o = *i;
 		ASSERT(o.name.size());
-		if(o.hasdefaultvalue) { store(o, o.defaultvalue, o.name[0], false); }
+		if(o.defval.size())
+		{
+			if(o.deffromvar)
+			{
+				// if the default value was extracted from bound variable,
+				// just store it into the map
+				insert(make_pair(o.mapkey, o.defval));
+			}
+			else
+			{
+				store(o, o.defval, o.name[0], false);
+			}
+		}
 		FOREACHj(j, o.name)
 		{
 			std::string &name = *j;
@@ -148,9 +162,9 @@ void Options::parse(option_list &args)
 			else { longOptMap[name] = &*i; }
 		}
 		// some courtesy sanity checking
-		ASSERT(!(o.hasdefaultvalue && o.parameter == Option::Required))
+		ASSERT(!(o.optval.size() && o.parameter == Option::Required))
 		{
-			std::cerr << o.mapkey << " has a default value '" << o.defaultvalue << "', but requires a parameter? This makes no sense because the parameter will always overwrite the default value.\n";
+			std::cerr << o.mapkey << " has a nonempty value '" << o.optval << "', but requires a parameter? This makes no sense because the parameter will always overwrite the default value.\n";
 		}
 	}
 	bool inoptargs = false;
@@ -158,7 +172,17 @@ void Options::parse(option_list &args)
 	FOREACH(this->args)
 	{
 		Option &o = *i;
-		if(o.hasdefaultvalue) { store(o, o.defaultvalue, o.name[0], true); }
+		if(o.deffromvar)
+		{
+			// if the default value was extracted from bound variable,
+			// just store it into the map
+			insert(make_pair(o.mapkey, o.defval));
+		}
+		else
+		{
+			store(o, o.defval, o.name[0], true);
+		}
+
 		switch(o.parameter)
 		{
 		case Option::Required:
@@ -169,6 +193,12 @@ void Options::parse(option_list &args)
 		case Option::Optional:
 			inoptargs = true;
 		break;
+		}
+
+		// some courtesy sanity checking
+		ASSERT(!(o.defval.size() && o.parameter == Option::Required))
+		{
+			std::cerr << o.mapkey << " has a default value '" << o.defval << "', but requires a parameter? This makes no sense because the parameter will always overwrite the default value.\n";
 		}
 	}
 
@@ -606,9 +636,20 @@ std::ostream &Options::help(std::ostream &out)
 		{
 			std::string &l = fmtted[j];
 			out << l;
-
 			if(l.size() < maxlen) { out << string(maxlen - l.size(), ' '); }
-			parformat::format_description(out, args[j].description, maxlen, 78, "");
+
+			ostringstream desc;
+			desc << args[j].description;
+
+			bool opened = false;
+			if(args[j].defval.size())
+			{
+				if(!opened) { desc << " ("; opened = true; } else { desc << ", "; }
+				desc << "'" << args[j].defval << "' if unspecified";
+			}
+			if(opened) { desc << ")"; }
+
+			parformat::format_description(out, desc.str(), maxlen, 78, "");
 			out << "\n";
 		}
 	}
@@ -663,10 +704,18 @@ std::ostream &Options::help(std::ostream &out)
 			// right column
 			ostringstream desc;
 			desc << o.description;
+			bool opened = false;
+			if(o.defval.size())
+			{
+				if(!opened) { desc << " ("; opened = true; } else { desc << ", "; }
+				desc << "'" << o.defval << "' if unspecified";
+			}
 			if(o.parameter == Option::Optional)
 			{
-				desc << " (default '" << o.optval << "')";
+				if(!opened) { desc << " ("; opened = true; } else { desc << ", "; }
+				desc << "'" << o.optval << "' if param not present";
 			}
+			if(opened) { desc << ")"; }
 			parformat::format_description(out, desc.str(), maxlen, 78, l.first);
 			out << "\n";
 		}
@@ -747,13 +796,13 @@ int test_options(int argc, char **argv)
 {
 try {
 	std::string argv0 = argv[0];
-	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.7 2006/07/10 19:15:31 mjuric Exp $");
+	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.8 2006/07/13 23:26:55 mjuric Exp $");
 	std::string progdesc = "libpeytondemo, a mock star catalog generator.";
 
 	//
 	// Declare option variables here
 	//
-	std::string cmd, conf, output;
+	std::string cmd, conf, output = "xx.txt";
 	int wparam = 3;
 	bool d = true;
 	std::string strval = "nostring";
@@ -777,8 +826,12 @@ try {
 
 	sopts["footprint"] = new Options(argv0 + " footprint", progdesc + " Footprint generation subcommand.", version, Authorship::majuric);
 	sopts["footprint"]->argument("conf").bind(conf).desc("Configuration file for the Bahcall-Soneira model, or if cmd=footprint, the file with the set of runs for which to calculate footprint.");
-	sopts["footprint"]->argument("output").bind(output).def_val("xx.txt").optional().desc("Name of the output file (needed for cmd='pdf')");
-	sopts["footprint"]->option("p").addname("xparam").addname("wparam").bind(wparam).param_required().desc("An integer option requiring a parameter. This is intentionaly longer than it should be.\nAnd here is a new paragraph now. Blabla new paragraph that is long.");
+	sopts["footprint"]->argument("output").bind(output).optional().desc("Name of the output file (needed for cmd='pdf')");
+	sopts["footprint"]->option("p")
+		.addname("xparam").addname("wparam")
+		.bind(wparam)
+		.param_required()
+		.desc("An integer option requiring a parameter. This is intentionaly longer than it should be.\nAnd here is a new paragraph now. Blabla new paragraph that is long.");
 	sopts["footprint"]->option("d").addname("ddlong").addname("ddlong2").bind(d).value("false").desc("A boolean switch");
 	sopts["footprint"]->option("strval").bind(strval).param_required().desc("A string with optional value");
 	sopts["footprint"]->add_standard_options();
@@ -825,13 +878,13 @@ try {
 	//
 	// Program version information
 	//
-	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.7 2006/07/10 19:15:31 mjuric Exp $");
+	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.8 2006/07/13 23:26:55 mjuric Exp $");
 	std::string progdesc = "libpeytondemo, a mock star catalog generator.";
 
 	//
 	// Declare option variables here
 	//
-	std::string cmd, conf, output;
+	std::string cmd, conf, output = "xx.txt";
 	int wparam = 3;
 	bool d = true;
 	std::string strval = "nostring";
@@ -850,7 +903,7 @@ try {
 		);
 	opts.add_standard_options();
 	opts.argument("conf").bind(conf).desc("Configuration file for the Bahcall-Soneira model, or if cmd=footprint, the file with the set of runs for which to calculate footprint.");
-	opts.argument("output").bind(output).def_val("xx.txt").optional().desc("Name of the output file (needed for cmd='pdf')");
+	opts.argument("output").bind(output).optional().desc("Name of the output file (needed for cmd='pdf')");
 	opts.option("wparam").bind(wparam).param_required().desc("An integer option requiring a parameter. This is intentionaly longer than it should be.\nAnd here is a new paragraph now. Blabla new paragraph that is long.");
 	opts.option("d").addname("ddlong").addname("ddlong2").bind(d).value("false").desc("A boolean switch");
 	opts.option("strval").bind(strval).param_required().desc("A string with optional value");
