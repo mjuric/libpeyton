@@ -85,7 +85,7 @@ bool Options::handle_argument(const std::string &arg, Option *&o)
 void Options::store(Option &o, const std::string &value, const std::string &opt, bool is_argument)
 {
 	// store to string map
-	insert(make_pair(o.mapkey, value));
+	(*static_cast<map<string, string> *>(this))[o.mapkey] = value;
 
 	// parse and store into bound variable
 	if(o.variable && !o.notify(value))
@@ -801,7 +801,7 @@ int test_options(int argc, char **argv)
 {
 try {
 	std::string argv0 = argv[0];
-	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.9 2006/07/14 00:03:45 mjuric Exp $");
+	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.10 2006/07/14 20:49:09 mjuric Exp $");
 	std::string progdesc = "libpeytondemo, a mock star catalog generator.";
 
 	//
@@ -883,7 +883,7 @@ try {
 	//
 	// Program version information
 	//
-	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.9 2006/07/14 00:03:45 mjuric Exp $");
+	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.10 2006/07/14 20:49:09 mjuric Exp $");
 	std::string progdesc = "libpeytondemo, a mock star catalog generator.";
 
 	//
