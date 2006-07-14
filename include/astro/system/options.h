@@ -181,6 +181,7 @@ public:
 	std::string				description;	///< description of this option
 
 	std::string				defval;		///< if it was not specified on the command line, set the hash map to this value.
+	bool					defvalset;
 	bool					deffromvar;
 
 protected:
@@ -188,7 +189,7 @@ protected:
 	bool notify(const std::string &s);			///< set the value of a bound variable, if any. Called from Options::parse. return false if parsing unsuccessful.
 
 public:
-	Option() : parameter(None) {}
+	Option() : parameter(None), defvalset(false), deffromvar(false) {}
 
 	Option(const Option &o);
 	Option& operator=(const Option &o);
@@ -208,12 +209,14 @@ public:
 
 	Option &def_val(const std::string &val)
 	{
-		if(!defval.empty())
+		if(defvalset)
 		{
 			using namespace peyton::exceptions;
 			THROW(EOptions, std::string("PROGRAM ERROR (please notify the author): Default value already set for option ") + name[0]);
 		}
-		defval = val; return *this;
+		defval = val;
+		defvalset = true;
+		return *this;
 	}
 
 	template<typename T>

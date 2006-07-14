@@ -32,6 +32,7 @@ Option::Option(const Option &o)
 	name(o.name), optval(o.optval),
 	parameter(o.parameter),
 	defval(o.defval), description(o.description),
+	defvalset(o.defvalset),
 	deffromvar(o.deffromvar)
 { }
 
@@ -41,6 +42,7 @@ Option& Option::operator=(const Option &o)
 	mapkey = o.mapkey; name = o.name; optval = o.optval;
 	parameter = o.parameter; defval = o.defval; description = o.description;
 	deffromvar = o.deffromvar;
+	defvalset = o.defvalset;
 
 	return *this;
 }
@@ -86,7 +88,7 @@ void Options::store(Option &o, const std::string &value, const std::string &opt,
 	insert(make_pair(o.mapkey, value));
 
 	// parse and store into bound variable
-	if(!o.notify(value))
+	if(o.variable && !o.notify(value))
 	{
 		std::string tmp = is_argument ? "argument" : "option";
 		THROW(EOptions, std::string("Error parsing the value of ") + tmp + " " + opt + ", " + o.variable.type() + " expected.");
@@ -141,7 +143,7 @@ void Options::parse(option_list &args)
 	{
 		Option &o = *i;
 		ASSERT(o.name.size());
-		if(o.defval.size())
+		if(o.defvalset)
 		{
 			if(o.deffromvar)
 			{
@@ -172,15 +174,18 @@ void Options::parse(option_list &args)
 	FOREACH(this->args)
 	{
 		Option &o = *i;
-		if(o.deffromvar)
+		if(o.defvalset)
 		{
-			// if the default value was extracted from bound variable,
-			// just store it into the map
-			insert(make_pair(o.mapkey, o.defval));
-		}
-		else
-		{
-			store(o, o.defval, o.name[0], true);
+			if(o.deffromvar)
+			{
+				// if the default value was extracted from bound variable,
+				// just store it into the map
+				insert(make_pair(o.mapkey, o.defval));
+			}
+			else
+			{
+				store(o, o.defval, o.name[0], true);
+			}
 		}
 
 		switch(o.parameter)
@@ -196,7 +201,7 @@ void Options::parse(option_list &args)
 		}
 
 		// some courtesy sanity checking
-		ASSERT(!(o.defval.size() && o.parameter == Option::Required))
+		ASSERT(!(o.defvalset && o.parameter == Option::Required))
 		{
 			std::cerr << o.mapkey << " has a default value '" << o.defval << "', but requires a parameter? This makes no sense because the parameter will always overwrite the default value.\n";
 		}
@@ -642,7 +647,7 @@ std::ostream &Options::help(std::ostream &out)
 			desc << args[j].description;
 
 			bool opened = false;
-			if(args[j].defval.size())
+			if(args[j].defvalset)
 			{
 				if(!opened) { desc << " ("; opened = true; } else { desc << ", "; }
 				desc << "'" << args[j].defval << "' if unspecified";
@@ -705,7 +710,7 @@ std::ostream &Options::help(std::ostream &out)
 			ostringstream desc;
 			desc << o.description;
 			bool opened = false;
-			if(o.defval.size())
+			if(o.defvalset)
 			{
 				if(!opened) { desc << " ("; opened = true; } else { desc << ", "; }
 				desc << "'" << o.defval << "' if unspecified";
@@ -796,7 +801,7 @@ int test_options(int argc, char **argv)
 {
 try {
 	std::string argv0 = argv[0];
-	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.8 2006/07/13 23:26:55 mjuric Exp $");
+	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.9 2006/07/14 00:03:45 mjuric Exp $");
 	std::string progdesc = "libpeytondemo, a mock star catalog generator.";
 
 	//
@@ -878,7 +883,7 @@ try {
 	//
 	// Program version information
 	//
-	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.8 2006/07/13 23:26:55 mjuric Exp $");
+	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.9 2006/07/14 00:03:45 mjuric Exp $");
 	std::string progdesc = "libpeytondemo, a mock star catalog generator.";
 
 	//
