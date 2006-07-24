@@ -30,7 +30,7 @@ namespace io {
 				...
 			};
 		
-			class vector::iostate : public <vector::iostate>
+			class vector::iostate : public iostate_base<vector::iostate>
 			{
 				iostate(iostate &);
 				...

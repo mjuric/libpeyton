@@ -2,6 +2,7 @@
 #define __astro_system_options
 
 #include <astro/system/config.h>
+#include <astro/util.h>
 #include <astro/exceptions.h>
 
 #include <vector>
@@ -113,10 +114,11 @@ namespace opt
 	struct binding : public any::binding_data
 	{
 		T &var;
-		binding(T &v) : var(v) { }
+		bool isset;
+		binding(T &v) : var(v), isset(false) { }
 
 		virtual std::string type() const			{ return type_name(var); }
-		virtual std::istream &setval(std::istream &in)		{ return in >> var; }
+		virtual std::istream &setval(std::istream &in)		{ isset = in >> var; return in; }
 		virtual std::ostream &getval(std::ostream &out) const	{ return out << var; }
 		virtual binding *clone() const				{ return new binding<T>(*this); }
 
@@ -140,9 +142,11 @@ namespace opt
 		std::string tmp;
 		if(!(in >> tmp)) { return in; }
 
+		isset = true;
 		if(tmp == "false" || tmp == "0") { var = 0; return in; }
 		if(tmp == "true" || tmp == "1") { var = 1; return in; }
 
+		isset = false;
 		in.setstate(std::ios::failbit);
 		return in;
 	}
@@ -150,8 +154,52 @@ namespace opt
 	// specialize output for bool
 	inline std::ostream &binding<bool>::getval(std::ostream &out) const
 	{
-		out << var ? "true" : "false";
+		return out << (var ? "true" : "false");
 	}
+
+	// specialize input/output for vectors
+	template<typename T>
+	struct binding<std::vector<T> > : public any::binding_data
+	{
+		std::vector<T> &var;
+		bool isset;
+		binding(std::vector<T> &v) : var(v), isset(false) { }
+
+		virtual std::string type() const			{ return type_name(var); }
+		virtual std::istream &setval(std::istream &in)
+		{
+			T val;
+			binding<T> tmp(val);
+			if(!tmp.setval(in)) { return in; }
+	
+			if(!isset) { this->var.clear(); }
+			this->var.push_back(val);
+			this->isset = true;
+	
+			return in;
+		}
+		virtual std::ostream &getval(std::ostream &out) const
+		{
+			T val;
+			binding<T> tmp(val);
+
+			FOREACH(var)
+			{
+				if(i != var.begin()) { out << " "; }
+				val = *i;
+				tmp.getval(out);
+			}
+	
+			return out;
+		}
+		virtual binding *clone() const
+		{
+			return new binding<std::vector<T> >(*this);
+		}
+
+		virtual ~binding() {};
+	};
+
 };
 
 /**
@@ -177,7 +225,9 @@ public:
 	std::vector<std::string>		name;		///< option name
 	std::string				optval;		///< value to be returned if the option was given on the command line but
 								///< either parameter=no or parameter=optional and no parameter was specified
+	bool					optvalset;	///< has the option value been set
 	Parameter parameter;					///< does the option take a parameter?
+	bool					dogobble;	///< do we absorb all arguments after this one (valid only for last cmdline argument)
 	std::string				description;	///< description of this option
 
 	std::string				defval;		///< if it was not specified on the command line, set the hash map to this value.
@@ -189,7 +239,7 @@ protected:
 	bool notify(const std::string &s);			///< set the value of a bound variable, if any. Called from Options::parse. return false if parsing unsuccessful.
 
 public:
-	Option() : parameter(None), defvalset(false), deffromvar(false) {}
+	Option() : parameter(None), defvalset(false), optvalset(false), deffromvar(false), dogobble(false) {}
 
 	Option(const Option &o);
 	Option& operator=(const Option &o);
@@ -204,7 +254,18 @@ public:
 	Option &param_none()	{ parameter = Option::None; return *this; }
 	Option &required()	{ parameter = Option::Required; return *this; }
 	Option &optional()	{ parameter = Option::Optional; return *this; }
-	Option &value(const std::string &val)     { optval = val; return *this; }
+	Option &gobble()	{ dogobble = true; return *this; }
+	Option &value(const std::string &val)
+	{
+		if(optvalset)
+		{
+			using namespace peyton::exceptions;
+			THROW(EOptions, std::string("PROGRAM ERROR (please notify the author): Value already set for option ") + name[0]);
+		}
+		optval = val;
+		optvalset = true;
+		return *this;
+	}
 	Option &desc(const std::string &val)      { description = val; return *this; }
 
 	Option &def_val(const std::string &val)

@@ -33,7 +33,9 @@ Option::Option(const Option &o)
 	parameter(o.parameter),
 	defval(o.defval), description(o.description),
 	defvalset(o.defvalset),
-	deffromvar(o.deffromvar)
+	optvalset(o.optvalset),
+	deffromvar(o.deffromvar),
+	dogobble(o.dogobble)
 { }
 
 Option& Option::operator=(const Option &o)
@@ -43,6 +45,8 @@ Option& Option::operator=(const Option &o)
 	parameter = o.parameter; defval = o.defval; description = o.description;
 	deffromvar = o.deffromvar;
 	defvalset = o.defvalset;
+	optvalset = o.optvalset;
+	dogobble = o.dogobble;
 
 	return *this;
 }
@@ -69,9 +73,16 @@ bool Options::handle_argument(const std::string &arg, Option *&o)
 {
 	if(nargs == args.size())
 	{
-		if(ignore_unknown_opts) { return false; }
+		if(args.back().dogobble)
+		{
+			nargs--;
+		}
+		else
+		{
+			if(ignore_unknown_opts) { return false; }
 
-		THROW(EOptions, "Too many command line arguments specified");
+			THROW(EOptions, "Too many command line arguments specified");
+		}
 	}
 
 	// store
@@ -85,7 +96,16 @@ bool Options::handle_argument(const std::string &arg, Option *&o)
 void Options::store(Option &o, const std::string &value, const std::string &opt, bool is_argument)
 {
 	// store to string map
-	(*static_cast<map<string, string> *>(this))[o.mapkey] = value;
+	map<string, string> &smap = *this;
+	if(found(o.mapkey))
+	{
+		smap[o.mapkey] += " ";
+		smap[o.mapkey] += value;
+	}
+	else
+	{
+		smap[o.mapkey] = value;
+	}
 
 	// parse and store into bound variable
 	if(o.variable && !o.notify(value))
@@ -114,8 +134,8 @@ void Options::add_standard_options()
 {
 	if(!defoptsadded)
 	{
-		option("v").addname("version").bind(t_version, false).desc("Version and author information");
-		option("h").addname("help").bind(t_help, false).desc("This help page");
+		option("v").addname("version").value("").bind(t_version, false).desc("Version and author information");
+		option("h").addname("help").value("").bind(t_help, false).desc("This help page");
 
 		defoptsadded = true;
 	}
@@ -163,11 +183,15 @@ void Options::parse(option_list &args)
 			if(name.size() == 1) { shortOptMap[name[0]] = &*i; }
 			else { longOptMap[name] = &*i; }
 		}
-		// some courtesy sanity checking
+		ASSERT(o.optvalset || o.parameter == Option::Required)
+		{
+			std::cerr << o.mapkey << " has no value set, but does not require a parameter to be present";
+		}
+/*		// some courtesy sanity checking
 		ASSERT(!(o.optval.size() && o.parameter == Option::Required))
 		{
 			std::cerr << o.mapkey << " has a nonempty value '" << o.optval << "', but requires a parameter? This makes no sense because the parameter will always overwrite the default value.\n";
-		}
+		}*/
 	}
 	bool inoptargs = false;
 	nreqargs = 0;
@@ -200,11 +224,19 @@ void Options::parse(option_list &args)
 		break;
 		}
 
-		// some courtesy sanity checking
+		if(o.dogobble)
+		{
+			typeof(this->args.begin()) j = i;
+			if(++j != this->args.end())
+			{
+				THROW(EOptions, "PROGRAM ERROR (please notify the author): additional command line arguments are not allowed once an argument has been marked as ``gobble'' argument.");
+			}
+		}
+/*		// some courtesy sanity checking
 		ASSERT(!(o.defvalset && o.parameter == Option::Required))
 		{
 			std::cerr << o.mapkey << " has a default value '" << o.defval << "', but requires a parameter? This makes no sense because the parameter will always overwrite the default value.\n";
-		}
+		}*/
 	}
 
 	// parse the arguments in the list
@@ -592,8 +624,8 @@ std::ostream &Options::summary(std::ostream &out)
 
 			if(i != args.begin())              { out << " "; }
 
-			if(o.parameter == Option::Required) { out << "<" + o.name[0] << ">"; }
-			else                               { out << "[" + o.name[0] << "]"; }
+			if(o.parameter == Option::Required) { out << "<" + o.name[0] << (o.dogobble ? " [...]>" : ">"); }
+			else                               { out << "[" + o.name[0] << (o.dogobble ? " [...]]" : "]"); }
 		}
 	}
 
@@ -647,7 +679,7 @@ std::ostream &Options::help(std::ostream &out)
 			desc << args[j].description;
 
 			bool opened = false;
-			if(args[j].defvalset)
+			if(args[j].defvalset && args[j].parameter != Option::Required)
 			{
 				if(!opened) { desc << " ("; opened = true; } else { desc << ", "; }
 				desc << "'" << args[j].defval << "' if unspecified";
@@ -797,11 +829,23 @@ namespace system {
 #define PRINT(v) \
 	std::cout << #v" = " << v << " (found = " << sopts[cmd]->found(#v) << ") " << " (*sopts[cmd].count = " << sopts[cmd]->count(#v) << ") ((*sopts[cmd])[" #v "]) = " << (*sopts[cmd])[#v] << "\n";
 
+template<typename C>
+std::string join(const std::string &separator, const C& c)
+{
+        std::ostringstream ss;
+        FOREACH(c)
+        {
+                if(i != c.begin()) { ss << separator; }
+                ss << *i;
+        }
+        return ss.str();
+}
+
 int test_options(int argc, char **argv)
 {
 try {
 	std::string argv0 = argv[0];
-	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.10 2006/07/14 20:49:09 mjuric Exp $");
+	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.11 2006/07/24 01:48:09 mjuric Exp $");
 	std::string progdesc = "libpeytondemo, a mock star catalog generator.";
 
 	//
@@ -811,6 +855,9 @@ try {
 	int wparam = 3;
 	bool d = true;
 	std::string strval = "nostring";
+	std::vector<std::string> stuff;
+	stuff.push_back("default1");
+	stuff.push_back("default2");
 
 	//
 	// Option definitions
@@ -827,11 +874,11 @@ try {
 		);
 	opts.stop_after_final_arg = true;
 	opts.prolog = "For detailed help on a particular subcommand, do `libpeytondemo <cmd> -h'";
-	opts.add_standard_options();
 
 	sopts["footprint"] = new Options(argv0 + " footprint", progdesc + " Footprint generation subcommand.", version, Authorship::majuric);
 	sopts["footprint"]->argument("conf").bind(conf).desc("Configuration file for the Bahcall-Soneira model, or if cmd=footprint, the file with the set of runs for which to calculate footprint.");
-	sopts["footprint"]->argument("output").bind(output).optional().desc("Name of the output file (needed for cmd='pdf')");
+	sopts["footprint"]->argument("output").bind(output).desc("Name of the output file (needed for cmd='pdf')");
+	sopts["footprint"]->argument("stuff").bind(stuff).optional().gobble().desc("A variable/infinite list of arguments");
 	sopts["footprint"]->option("p")
 		.addname("xparam").addname("wparam")
 		.bind(wparam)
@@ -839,7 +886,6 @@ try {
 		.desc("An integer option requiring a parameter. This is intentionaly longer than it should be.\nAnd here is a new paragraph now. Blabla new paragraph that is long.");
 	sopts["footprint"]->option("d").addname("ddlong").addname("ddlong2").bind(d).value("false").desc("A boolean switch");
 	sopts["footprint"]->option("strval").bind(strval).param_required().desc("A string with optional value");
-	sopts["footprint"]->add_standard_options();
 
 	//
 	// Parse
@@ -868,6 +914,8 @@ try {
 	PRINT(d);
 	PRINT(strval);
 
+	std::cerr << "stuff = " << join(", ", stuff) << "\n";
+
 } catch(EAny &e) {
 	e.print();
 	return -1;
@@ -883,7 +931,7 @@ try {
 	//
 	// Program version information
 	//
-	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.10 2006/07/14 20:49:09 mjuric Exp $");
+	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.11 2006/07/24 01:48:09 mjuric Exp $");
 	std::string progdesc = "libpeytondemo, a mock star catalog generator.";
 
 	//

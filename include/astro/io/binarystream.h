@@ -266,6 +266,8 @@ namespace io {
 	// C and STL string specializations. Note that there's no
 	// operator >>(char *), because of possible buffer overflow issues.
 	//
+
+	#define RETFAIL(x) if(!(x)) return in;
 	
 	template<>
 	inline BOSTREAM2(char* const& v)
@@ -286,11 +288,11 @@ namespace io {
 	inline BISTREAM2(std::string &v)
 	{
 		size_t len;
-		in >> len;
+		RETFAIL(in >> len);
 	
 		char buf[len+1];
 		buf[len] = 0;
-		in.read_pod(buf, len);
+		RETFAIL(in.read_pod(buf, len));
 
 		v = buf;
 	
@@ -341,14 +343,14 @@ namespace io {
 		inline ibstream& itread(ibstream &in, C &a)
 		{
 			unsigned int size;
-			in >> size;
+			RETFAIL(in >> size);
 	
 			a.clear();
 	
 			typename C::value_type tmp;
 			while(size--)
 			{
-				in >> tmp;
+				RETFAIL(in >> tmp);
 				a.insert(a.end(), tmp);
 			}
 			return in;
@@ -358,7 +360,7 @@ namespace io {
 		inline ibstream& itreadvec(ibstream &in, C &a)
 		{
 			unsigned int size;
-			in >> size;
+			RETFAIL(in >> size);
 			a.resize(size);
 
 			typedef ::boost::is_pod<typename C::value_type> is_podd;
@@ -377,20 +379,20 @@ namespace io {
 		inline ibstream& itreadmap(ibstream &in, C &a)
 		{
 			unsigned int size;
-			in >> size;
+			RETFAIL(in >> size);
 	
 			a.clear();
 
 			typename C::key_type key;
 			while(size--)
 			{
-				in >> key;
-				in >> a[key];
+				RETFAIL(in >> key);
+				RETFAIL(in >> a[key]);
 			}
 			return in;
 		}
 
-	
+	#undef RETFAIL
 	
 	//
 	// STL specializations

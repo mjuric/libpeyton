@@ -41,7 +41,20 @@ namespace stats {
 		D h = dist / 2;
 		return (*(begin + h - 1) + *(begin + h)) / 2.;
 	}
-	
+
+	template<typename IT, typename CONV>
+	double median_of_sorted(const IT &begin, const IT &end, const CONV &c)
+	{
+		typedef typename std::iterator_traits<IT>::difference_type D;
+		D dist = end - begin;
+		if(dist % 2 != 0)
+		{
+			return c(*(begin + dist / 2));
+		}
+		D h = dist / 2;
+		return (c(*(begin + h - 1)) + c(*(begin + h))) / 2.;
+	}
+
 	template<typename IT>
 	typename std::iterator_traits<IT>::value_type mean(const IT &begin, const IT &end)
 	{
@@ -51,6 +64,21 @@ namespace stats {
 		for(IT i = begin; i != end; ++i)
 		{
 			sum += *i;
+			++n;
+		}
+	
+		return sum / n;
+	}
+
+	template<typename IT, typename CONV>
+	double mean(const IT &begin, const IT &end, const CONV &c)
+	{
+		double sum(0);
+		typename std::iterator_traits<IT>::difference_type n(0);
+
+		for(IT i = begin; i != end; ++i)
+		{
+			sum += c(*i);
 			++n;
 		}
 	
