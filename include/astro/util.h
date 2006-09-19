@@ -40,7 +40,7 @@ namespace peyton {
 namespace util {
 
 	/// return approximate longitude of the Sun for a given \a time
-	Radians approxSunLongitude(MJD time);
+	Radians approxSunLongitude(peyton::MJD t);
 
 	/// remove whitespace from the begining of the string \a str
 	std::string ltrim(const std::string &str, const std::string &whitespace = "\t ");

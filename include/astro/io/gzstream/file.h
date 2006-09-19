@@ -1,5 +1,5 @@
 //
-// $Id: file.h,v 1.2 2004/02/27 13:52:31 mjuric Exp $ 
+// $Id: file.h,v 1.3 2006/09/19 20:25:34 mjuric Exp $ 
 //  
 //  gzstream::c_file
 //  Copyright (C) 2002 Christian Holm Christensen <cholm@nbi.dk> 
@@ -180,12 +180,14 @@ namespace gzstream
   };
 
   //__________________________________________________________________
+  template<>
   inline basic_file<char>::int_type
   basic_file<char>::overflow(basic_file::int_type c)
   {
     return c != EOF ? gzputc(_file, c) : EOF;
   }
   //__________________________________________________________________
+  template<>
   inline basic_file<char>::int_type
   basic_file<char>::underflow()
   {
@@ -194,12 +196,14 @@ namespace gzstream
     return c;
   }
   //__________________________________________________________________
+  template<>
   inline basic_file<char>::int_type
   basic_file<char>::uflow()
   {
     return Xgetc(_file);
   }
   //__________________________________________________________________
+  template<>
   inline basic_file<char>::int_type
   basic_file<char>::pbackfail(basic_file::int_type c)
   {

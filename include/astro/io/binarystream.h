@@ -290,7 +290,8 @@ namespace io {
 		size_t len;
 		RETFAIL(in >> len);
 	
-		char buf[len+1];
+		// FIXME: stack overflow likely
+		char *buf = (char*)alloca(len+1);
 		buf[len] = 0;
 		RETFAIL(in.read_pod(buf, len));
 

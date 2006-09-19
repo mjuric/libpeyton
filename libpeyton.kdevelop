@@ -39,20 +39,20 @@
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevg77options</f77compiler>
-        <cxxflags>-O2 -g3 -Wstrict-aliasing</cxxflags>
+        <cxxflags>-O2 -Wstrict-aliasing</cxxflags>
         <configargs>--enable-debug=full --prefix=/home/mjuric/projects/libpeyton/workspace --with-CCfits=/usr/local --with-CCfits-include=/usr/local/include/CCfits</configargs>
         <topsourcedir/>
         <cppflags/>
         <ldflags/>
         <ccompilerbinary/>
-        <cxxcompilerbinary/>
-        <f77compilerbinary/>
+        <cxxcompilerbinary>g++411</cxxcompilerbinary>
+        <f77compilerbinary>gfortran411</f77compilerbinary>
         <cflags/>
-        <f77flags/>
+        <f77flags>-O2 -Wstrict-aliasing</f77flags>
         <envvars/>
       </optimized>
       <debug>
-        <configargs>--enable-debug=full --with-CCfits=/usr/local --with-CCfits-include=/usr/local/include/CCfits</configargs>
+        <configargs>--enable-debug=full --with-CCfits=/usr/local --with-CCfits-include=/usr/local/include/CCfits --enable-pch</configargs>
         <builddir>debug</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
@@ -65,7 +65,7 @@
         <cxxcompilerbinary/>
         <f77compilerbinary/>
         <cflags/>
-        <f77flags/>
+        <f77flags>-O0 -g3</f77flags>
         <envvars/>
       </debug>
       <default>

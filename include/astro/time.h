@@ -12,7 +12,7 @@ namespace time {
 	void MJD2cal(double mjd, int &year, int &month, double &dd);
 	double dayfrac(int h, int m, int s);
 
-	char *toMPECTimeFormat(char *str, MJD time);
+	char *toMPECTimeFormat(char *str, peyton::MJD time);
 }
 namespace Time = time;
 }

@@ -137,6 +137,7 @@ namespace opt
 		{}
 
 	// specialize for bool
+	template<>
 	inline std::istream &binding<bool>::setval(std::istream &in)
 	{
 		std::string tmp;
@@ -150,11 +151,29 @@ namespace opt
 		in.setstate(std::ios::failbit);
 		return in;
 	}
-
-	// specialize output for bool
+	template<>
 	inline std::ostream &binding<bool>::getval(std::ostream &out) const
 	{
 		return out << (var ? "true" : "false");
+	}
+
+	// specialize for string - ignore spaces
+	template<>
+	inline std::istream &binding<std::string>::setval(std::istream &in)
+	{
+		var.clear();
+		while(in.good())
+		{
+			char buf[51] = {0};
+			in.read(buf, 50);
+			var += buf;
+		}
+		if(in.eof())
+		{
+			// clear EOF bit so that the result is a success
+			in.clear();
+		}
+		return in;
 	}
 
 	// specialize input/output for vectors
