@@ -68,7 +68,7 @@ namespace opt
 {
 	struct any
 	{
-	protected:
+	public:
 		struct binding_data
 		{
 			virtual std::istream &setval(std::istream &in) = 0;

@@ -105,15 +105,15 @@ Poly Poly::cutflip(int x)
 
 	// find the edges we intersect
 	V2 a, b;
-	typeof(vs.begin()) vit = vs.begin(), vit0 = vit++, ea = NULL, eb = NULL;
-	for(; vit != vs.end() && (ea == NULL || eb == NULL); vit++, vit0++) {
+	typeof(vs.begin()) vit = vs.begin(), vit0 = vit++, ea = vs.end(), eb = vs.end();
+	for(; vit != vs.end() && (ea == vs.end() || eb == vs.end()); vit++, vit0++) {
 		insideInterval(vit, vit0, x, ea, eb, a, b);
 	}
 	vit = vs.begin();
 	insideInterval(vit, vit0, x, ea, eb, a, b); // close the loop
 
 	// check for degenerate single-V2 ending cases
-	if(ea == NULL && eb == NULL) {
+	if(ea == vs.end() && eb == vs.end()) {
 		char tmp[1000];
 //		DEBUG(verbose) << "Single V2 ending in poly [" << *this << "]";
 		return cutMyself();

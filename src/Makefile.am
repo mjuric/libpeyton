@@ -10,5 +10,6 @@ lib_LIBRARIES =  libpeyton.a
 libpeyton_a_SOURCES = Coordinates.cpp Exceptions.cpp Observation.cpp SkyPoint.cpp Time.cpp Util.cpp
 SUBDIRS = asteroids image io net sdss system ui
 libpeyton_a_LIBADD = $(top_builddir)/src/ui/libui.a $(top_builddir)/src/system/libsystem.a $(top_builddir)/src/asteroids/catalogs/libcatalogs.a $(top_builddir)/src/asteroids/libasteroids.a $(top_builddir)/src/sdss/libsdss.a $(top_builddir)/src/net/libnet.a $(top_builddir)/src/io/libio.a $(top_builddir)/src/image/libimage.a
-libpeytondemo_LDADD = $(top_builddir)/src/system/libsystem.a $(top_builddir)/src/libpeyton.a $(top_builddir)/src/sdss/libsdss.a $(top_builddir)/src/net/libnet.a $(top_builddir)/src/io/libio.a $(top_builddir)/src/image/libimage.a $(top_builddir)/src/asteroids/catalogs/libcatalogs.a $(top_builddir)/src/asteroids/libasteroids.a
 libpeyton_a_AR = $(top_srcdir)/arlib cru
+
+libpeytondemo_LDADD = libpeyton.a

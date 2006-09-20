@@ -124,11 +124,17 @@ bool Option::notify(const std::string &s)
 struct version_tag {} t_version;
 struct help_tag {} t_help;
 
-std::istream &opt::binding<version_tag >::setval(std::istream &in) { THROW(EOptionsVersion, ""); }
-std::ostream &opt::binding<version_tag >::getval(std::ostream &out) const { out << "t_version"; }
+namespace peyton {
+namespace system {
+namespace opt {
 
-std::istream &opt::binding<help_tag >::setval(std::istream &in) { THROW(EOptionsHelp, ""); }
-std::ostream &opt::binding<help_tag >::getval(std::ostream &out) const { out << "t_help"; }
+	template<> std::istream &binding<version_tag >::setval(std::istream &in) { THROW(EOptionsVersion, ""); }
+	template<> std::ostream &binding<version_tag >::getval(std::ostream &out) const { out << "t_version"; }
+
+	template<> std::istream &binding<help_tag >::setval(std::istream &in) { THROW(EOptionsHelp, ""); }
+	template<> std::ostream &binding<help_tag >::getval(std::ostream &out) const { out << "t_help"; }
+
+}}}
 
 void Options::add_standard_options()
 {
@@ -845,7 +851,7 @@ int test_options(int argc, char **argv)
 {
 try {
 	std::string argv0 = argv[0];
-	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.11 2006/07/24 01:48:09 mjuric Exp $");
+	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.12 2006/09/20 19:40:33 mjuric Exp $");
 	std::string progdesc = "libpeytondemo, a mock star catalog generator.";
 
 	//
@@ -931,7 +937,7 @@ try {
 	//
 	// Program version information
 	//
-	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.11 2006/07/24 01:48:09 mjuric Exp $");
+	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.12 2006/09/20 19:40:33 mjuric Exp $");
 	std::string progdesc = "libpeytondemo, a mock star catalog generator.";
 
 	//
