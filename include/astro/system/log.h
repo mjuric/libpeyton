@@ -49,7 +49,7 @@ namespace logs
 	extern Log app; ///< predefined log for application messaging
 }
 
-//	namespace peyton { namespace system { namespace logs { \
+//	namespace peyton { namespace system { namespace logs { 
 
 #define LOG_DECLARE(name) \
 	namespace peyton { namespace system { namespace logs { \
