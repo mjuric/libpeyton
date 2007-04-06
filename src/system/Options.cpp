@@ -191,7 +191,7 @@ void Options::parse(option_list &args)
 		}
 		ASSERT(o.optvalset || o.parameter == Option::Required)
 		{
-			std::cerr << o.mapkey << " has no value set, but does not require a parameter to be present";
+			std::cerr << o.mapkey << " has no value set, nor does it require a parameter to be present";
 		}
 /*		// some courtesy sanity checking
 		ASSERT(!(o.optval.size() && o.parameter == Option::Required))
@@ -851,7 +851,7 @@ int test_options(int argc, char **argv)
 {
 try {
 	std::string argv0 = argv[0];
-	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.12 2006/09/20 19:40:33 mjuric Exp $");
+	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.13 2007/04/06 11:14:14 mjuric Exp $");
 	std::string progdesc = "libpeytondemo, a mock star catalog generator.";
 
 	//
@@ -937,7 +937,7 @@ try {
 	//
 	// Program version information
 	//
-	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.12 2006/09/20 19:40:33 mjuric Exp $");
+	VERSION_DATETIME(version, "$Id: Options.cpp,v 1.13 2007/04/06 11:14:14 mjuric Exp $");
 	std::string progdesc = "libpeytondemo, a mock star catalog generator.";
 
 	//

@@ -217,6 +217,14 @@ public:
 
 	void set(T a, T b) { DIM(2); this->val[0] = a; this->val[1] = b; }
 	void polar(double r, double phi) { DIM(2); set(r * cos(phi), r * sin(phi)); }
+	
+	// 2D CCW rotation around z axis
+	Vector<T, D> &rotate2d(const Radians angle)
+	{
+		const double c = cos(angle), s = sin(angle);
+		set(c*this->val[0] - s*this->val[1], s*this->val[0] + c*this->val[1]);
+		return *this;
+	}
 
 	// 3D
 	Vector(const T a, const T b, const T c) { DIM(3); set(a, b, c); }

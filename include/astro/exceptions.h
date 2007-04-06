@@ -1,6 +1,7 @@
 #ifndef __astro__exceptions_h
 #define __astro__exceptions_h
 
+#include <iostream>
 #include <string>
 
 /**
@@ -91,7 +92,12 @@ namespace exceptions {
 		std::string func,	///< Function from which this exception was thrown.
 				file; ///< Source file containing the function from which the exception was thrown
 	public:
-		EAny(std::string inf, std::string fun, std::string f, int l) : info(inf), func(fun), file(f), line(l), thrown(false) { }
+		EAny(std::string inf, std::string fun, std::string f, int l) : info(inf), func(fun), file(f), line(l), thrown(false)
+			{
+				std::cerr << inf << "\n";
+				std::cerr << fun << "\n";
+				std::cerr << f << ", " << l << "\n";
+			}
 		EAny(const EAny &b);
 		void print() const throw();
 		operator std::string() const;
