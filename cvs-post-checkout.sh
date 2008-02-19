@@ -1,10 +1,7 @@
 #!/bin/sh
 
-/usr/bin/test -d "lib-optimized" || \
+/usr/bin/test -f "cvs-post-checkout.sh" || \
 	(echo "Please run this script in root libpeyton distribution directory"; exit -1)
 
-cd lib-optimized
-ln -sf ../optimized/src/libpeyton.a
-cd ../lib
-ln -sf ../debug/src/libpeyton.a
-cd ..
+(mkdir -p lib-optimized && cd lib-optimized && ln -sf ../optimized/src/libpeyton.a) && \
+(mkdir -p lib           && cd lib           && ln -sf ../debug/src/libpeyton.a)
