@@ -69,26 +69,32 @@ namespace util {
 	inline std::string str(double n, const char *fmt = "%f") { char buf[20]; sprintf(buf, fmt, n); return buf; }
 
 	/// type-name demangler
+	inline std::string type_name(const std::type_info &ti)
+	{
+		std::string tmp;
+		int status;
+	
+		char *name = abi::__cxa_demangle(ti.name(), 0, 0, &status);
+		if(status != 0)
+		{
+			// TODO: thrown an exception here? If so, make sure to free(name) first!
+			tmp = "demangling error (status code = ";
+			tmp += str(status);
+		}
+		else
+		{
+			tmp = name;
+		}
+		free(name);
+
+		return tmp;
+	}
+
+	/// type-name demangler
 	template<typename T>
 		std::string type_name()
 		{
-			std::string tmp;
-			int status;
-	
-			char *name = abi::__cxa_demangle(typeid(T).name(), 0, 0, &status);
-			if(status != 0)
-			{
-				// TODO: thrown an exception here? If so, make sure to free(name) first!
-				tmp = "demangling error (status code = ";
-				tmp += str(status);
-			}
-			else
-			{
-				tmp = name;
-			}
-			free(name);
-
-			return tmp;
+			return type_name(typeid(T));
 		}
 
 	/// type-name demangler
