@@ -42,4 +42,14 @@ RS_BOOST_IOSTREAMS(
 	  AC_MSG_RESULT([    - Boost.Iostreams NOT found. Omitting Boost.Iostreams dependent code.])
 	])
 
+RS_BOOST_REGEX(
+	[
+	  AC_MSG_RESULT([    - Boost.Regex found.])
+          AC_DEFINE(HAVE_BOOST_REGEX, 1, Define if you have the package)
+	],[
+	  AC_MSG_RESULT([    - Boost.Regex NOT found. Omitting Boost.Regex dependent code.])
+	])
+
+LIBS="$LIBS $BOOST_LIBS"
+
 AC_OUTPUT(Makefile src/Makefile include/Makefile src/asteroids/Makefile src/asteroids/catalogs/Makefile src/image/Makefile src/io/Makefile src/net/Makefile src/sdss/Makefile src/system/Makefile src/ui/Makefile)
