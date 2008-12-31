@@ -4,6 +4,8 @@
 #include <iostream>
 #include <string>
 
+#include "system/log.h"
+
 /**
 	\file
 	\brief Exception class declarations and macros
@@ -29,8 +31,8 @@ DERIVE_EXCEPTION(EMyException, EAny);
 #define DERIVE_EXCEPTION(ex, parent) \
 	class ex : public parent { \
 	public: \
-		ex(std::string inf, std::string fun, std::string f, int l) \
-			: parent(inf, fun, f, l) {} \
+		ex(const std::string &inf, const std::string &fun, const std::string &f, int l, const std::string &st) \
+			: parent(inf, fun, f, l, st) {} \
 	}
 
 /// Macro for deriving exceptions from EAny
@@ -46,9 +48,9 @@ namespace peyton { namespace exceptions {
 	void log_exception(const EAny &e) throw();
 
 	template<typename E, typename INF>
-	void do_throw(const INF &inf, const char *PF, const char *F, int L) throw(E)
+	void do_throw(const INF &inf, const char *PF, const char *F, int L, const std::string &ST) throw(E)
 	{
-		E e(inf, PF, F, L);
+		E e(inf, PF, F, L, ST);
 		if(!peyton::exceptions::exceptionRaised)
 		{
 			peyton::exceptions::exceptionRaised++;
@@ -66,7 +68,7 @@ namespace peyton { namespace exceptions {
 		
 	Use this macro instead of C++ throw keyword.
 */
-#define THROW(ex, inf) peyton::exceptions::do_throw<ex>(inf, __PRETTY_FUNCTION__, __FILE__, __LINE__);
+#define THROW(ex, inf) peyton::exceptions::do_throw<ex>(inf, __PRETTY_FUNCTION__, __FILE__, __LINE__, peyton::system::stacktrace());
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -84,20 +86,18 @@ namespace exceptions {
 	protected:
 		bool thrown;
 		template<typename E, typename INF>
-		friend void do_throw(const INF &inf, const char *PF, const char *F, int L) throw(E);
+		friend void do_throw(const INF &inf, const char *PF, const char *F, int L, const std::string &ST) throw(E);
 	public:
 		std::string info;	///< Descriptive information about the exception (eg. "File not found")
 
 		int line;		///< Source line number at which this exception was thrown.
 		std::string func,	///< Function from which this exception was thrown.
-				file; ///< Source file containing the function from which the exception was thrown
+			file,		///< Source file containing the function from which the exception was thrown
+			stacktrace;	///< Stack trace (if available)
 	public:
-		EAny(std::string inf, std::string fun, std::string f, int l) : info(inf), func(fun), file(f), line(l), thrown(false)
-			{
-				std::cerr << inf << "\n";
-				std::cerr << fun << "\n";
-				std::cerr << f << ", " << l << "\n";
-			}
+		EAny(const std::string &inf, const std::string &fun, const std::string &f, int l, const std::string &st)
+			: info(inf), func(fun), file(f), line(l), stacktrace(st), thrown(false)
+		{ }
 		EAny(const EAny &b);
 		void print() const throw();
 		operator std::string() const;
@@ -122,7 +122,7 @@ namespace exceptions {
 		/*
 			\overload EAny::EAny(std::string inf, std::string fun, std::string f, int l)
 		*/
-		EErrno(std::string inf, std::string fun, std::string f, int l);
+		EErrno(const std::string &inf, const std::string &fun, const std::string &f, int l, const std::string &st);
 	};
 
 	DERIVE_EXCEPTION(EIOException, EErrno);

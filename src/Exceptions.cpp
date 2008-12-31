@@ -16,18 +16,18 @@ int peyton::exceptions::exceptionRaised = 0;
 
 void EAny::print() const throw()
 {
-	DEBUG(exception) << (std::string)(*this);
+	MLOG(exception) << (std::string)(*this);
 }
 
 EAny::operator std::string() const
 {
 	std::ostringstream s;
-	s << io::format("[%s] : %s (at %s:%d)") << type_name(*this) << info << file << line;
+	s << io::format("Exception: %s\nInfo     : %s\nDetails  : %s:%d\n%s") << type_name(*this) << info << file << line << stacktrace;
 	return s.str();
 }
 
-EErrno::EErrno(std::string inf, std::string fun, std::string f, int l)
-	: EAny(inf, fun, f, l)
+EErrno::EErrno(const std::string &inf, const std::string &fun, const std::string &f, int l, const std::string &st)
+	: EAny(inf, fun, f, l, st)
 {
 	info += " [errno = " + str(errno) + " \"" + strerror(errno) + "\"]";
 	err = errno;
@@ -39,15 +39,8 @@ EAny::~EAny() throw()
 }
 
 EAny::EAny(const EAny &b)
+	: info(b.info), line(b.line), func(b.func), file(b.file), stacktrace(b.stacktrace), thrown(b.thrown)
 {
-	// std::cerr << "Copy constructor.\n";
-
-	info = b.info;
-	line = b.line;
-	func = b.func;
-	file = b.file;
-	thrown = b.thrown;
-	
 	if(thrown) { peyton::exceptions::exceptionRaised++; } //std::cerr << "Inc. er = " << exceptionRaised << "\n";}
 }
 

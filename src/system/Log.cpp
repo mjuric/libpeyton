@@ -1,6 +1,7 @@
 #include <astro/system/log.h>
 #include <astro/system/fs.h>
 
+#include <time.h>
 #include <string.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -8,39 +9,114 @@
 #include <algorithm>
 #include <iostream>
 
+// for stack traces
+#include <execinfo.h>
+#include <stdlib.h>
+#include <cxxabi.h>
+#include <dlfcn.h>
+
 using namespace peyton::system;
 
 LOG_DEFINE(peyton, exception, true);
 LOG_DEFINE(app, verb1, true);
+LOG_DEFINE(debug, verb5, false);
+LOG_DEFINE(message, verb2, true);
 
+/* Obtain a backtrace and print it to stdout. */
+void peyton::system::print_trace()
+{
+	void *array[10];
+	size_t size;
+	char **strings;
+	size_t i;
+
+	size = backtrace(array, 10);
+	MLOG(error) << "Obtained " << size << " stack frames.";
 #if 0
-void Log::write(const char *text, ...)
-{
-	va_list marker;
-	va_start(marker, text);
+	strings = backtrace_symbols(array, size);
 
-	vsprintf(buf, text, marker);
+	for (i = 0; i < size; i++)
+	{
+		MLOG(error) << strings[i];
+	}
 
-	va_end(marker);
+	free(strings);
+#else
+	// learnt this from http://stupefydeveloper.blogspot.com/2008/10/cc-call-stack.html
+	// need to link with -ldl and -rdynamic for it to work
+	using namespace abi;
 
-	std::cerr << buf << "\n";
-}
+	Dl_info dlinfo;
+	int status;
+	const char *symname;
+	char *demangled;
 
-void Log::debug(int level, const char *text, ...)
-{
-	va_list marker;
-	va_start(marker, text);
+	for (int i=0; i<size; ++i)
+	{
+		if(!dladdr(array[i], &dlinfo))
+			continue;
 
-	vsprintf(buf, text, marker);
+		symname = dlinfo.dli_sname;
 
-	va_end(marker);
+		demangled = __cxa_demangle(symname, NULL, 0, &status);
+		if(status == 0 && demangled)
+			symname = demangled;
 
-	std::cerr << "L" << level << ": " << buf << "\n";
-}
+//		printf("object: %s, function: %s\n", dlinfo.dli_fname, symname);
+		if(symname == NULL) { symname = "null"; }
+		MLOG(error) << dlinfo.dli_fname << '(' << symname << ')';
+
+		if (demangled)
+			free(demangled);
+	}
 #endif
+}
+
+/* Obtain a backtrace and print it to stdout. */
+std::string peyton::system::stacktrace()
+{
+	void *array[15];
+	size_t size;
+	std::stringstream out;
+
+	size = backtrace(array, 15);
+//	out << "Backtrace (" << size << " stack frames):\n";
+	out << "Backtrace:\n";
+
+	// learnt this from http://stupefydeveloper.blogspot.com/2008/10/cc-call-stack.html
+	// need to link with -ldl and -rdynamic for it to work
+	using namespace abi;
+
+	Dl_info dlinfo;
+	int status;
+	const char *symname;
+	char *demangled;
+
+	for (int i=0; i<size; ++i)
+	{
+		if(!dladdr(array[i], &dlinfo))
+			continue;
+
+		symname = dlinfo.dli_sname;
+
+		demangled = __cxa_demangle(symname, NULL, 0, &status);
+		if(status == 0 && demangled)
+			symname = demangled;
+
+		if(symname == NULL) { symname = "null"; }
+		out << "    " << dlinfo.dli_fname << '(' << symname << ")";
+		if(i+1<size) out << "\n";
+
+		if (demangled)
+			free(demangled);
+	}
+
+	return out.str();
+}
 
 int Log::level(int newlevel)
 {
+	if(!debuggingOn) { return -10; }
 	if(newlevel < 0) { return debugLevel; }
 
 	std::swap(newlevel, debugLevel);
@@ -50,14 +126,6 @@ int Log::level(int newlevel)
 Log::Log(const std::string &n, int level, bool on)
 : name(n), debugLevel(level), debuggingOn(on)
 {
-	// specific to this object
-	{
-	EnvVar e_on(name + "_debug_on");
-	if(e_on) { debuggingOn = atoi(e_on.c_str()) != 0; }
-	EnvVar e_l(name + "_debug_level");
-	if(e_l) { debugLevel = atoi(e_l.c_str()); }
-	}
-	
 	// global commands
 	{
 	EnvVar e_on("all_debug_on");
@@ -65,7 +133,15 @@ Log::Log(const std::string &n, int level, bool on)
 	EnvVar e_l("all_debug_level");
 	if(e_l) { debugLevel = atoi(e_l.c_str()); }
 	}
-	
+
+	// specific to this object
+	{
+	EnvVar e_on(name + "_debug_on");
+	if(e_on) { debuggingOn = atoi(e_on.c_str()) != 0; }
+	EnvVar e_l(name + "_debug_level");
+	if(e_l) { debugLevel = atoi(e_l.c_str()); }
+	}
+
 	// make a sound if called for
 	{
 	EnvVar e_on("all_debug_list");
@@ -79,15 +155,50 @@ Log::Log(const std::string &n, int level, bool on)
 	}
 }
 
-Log::linestream::linestream(Log &p, int level)
+Log::linestream::linestream(Log &p, int level, const char *subsys)
 : parent(p), std::ostringstream()
 {
-	(*this) << " [ " << parent.identify() << ", " << level << " ]   ";
+	EnvVar le("LOGGING");
+//	if(level == exception && (!le || (std::string)le == "0")) { return; }
+	if(!le || (std::string)le == "0") { return; }
+
+	time_t t = time(NULL);
+	char tstr[200];
+	strftime(tstr, sizeof(tstr), "%c", localtime(&t));
+	std::stringstream strm;
+	if(subsys)
+	{
+		std::string ss(subsys);
+		size_t p = ss.find('(');
+		if(p != std::string::npos) { ss.resize(p); }
+		p = ss.rfind(' ');
+		if(p != std::string::npos) { ss = ss.substr(p+1); }
+		strm << tstr << " " << parent.identify() << "(" << level << ") [" << ss << "]: ";
+	}
+	else
+	{
+		strm << tstr << " " << parent.identify() << "(" << level << "): ";
+	}
+	prefix = strm.str();
 }
 
 Log::linestream::~linestream()
 {
-	(*this) << "\n"; std::cerr << str();
+	std::string ss = str();
+	size_t p0 = 0;
+	do
+	{
+		size_t p1 = ss.find('\n', p0);
+		if(p1 == std::string::npos)
+		{
+			std::cerr << prefix << ss.substr(p0) << "\n";
+			break;
+		}
+
+		p1++;
+		std::cerr << prefix << ss.substr(p0, p1-p0);
+		p0 = p1;
+	} while(true);
 }
 
 std::ostringstream &Log::linestream::stream()
@@ -101,6 +212,8 @@ bool peyton::system::assert_msg_abort()
 	std::cerr << "##############################################################################\n";
 	std::cerr << "# Dump complete.\n";
 	std::cerr << "##############################################################################\n";
+	std::cerr << "\n\nStack Trace:";
+	peyton::system::print_trace();
 	std::cerr << "\n\n\n";
 	abort();
 }
