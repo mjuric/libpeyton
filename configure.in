@@ -3,7 +3,9 @@ AC_INIT(configure.in)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libpeyton, 0.8)
 
-LIBS="-lm"
+##LIBS="-lm -ldl"
+AC_CHECK_LIB(m,main)
+AC_CHECK_LIB(dl,main)
 
 AC_caolan_CHECK_PACKAGE(cfitsio, ffpss, cfitsio, fitsio.h,
    AC_MSG_RESULT([cfitsio found.]),
