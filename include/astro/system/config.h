@@ -5,6 +5,7 @@
 #include <map>
 #include <sstream>
 #include <vector>
+#include <set>
 
 namespace peyton {
 namespace system {
@@ -139,8 +140,20 @@ string z = config["string_value"];
 			var = it != this->end() ? Variant((*it).second) : dflt;
 			return it != end();
 		}
-	};
 
+		// useful specialization for std::string when the default parameter is const char*
+		bool get(std::string &var, const std::string &name, const char *dflt)
+		{
+			return get<std::string>(var, name, dflt);
+		}
+#if HAVE_BOOST_REGEX
+		// return all keys matching a given regular expression pattern pat. Note that the method
+		// does _not_ clear the matches set before populating it. Returns the number of matches
+		// found.
+		size_t get_matching_keys(std::set<std::string> &matches, const std::string &pat);
+#endif
+	};
+	
 	template<typename T>
 	int Config::Variant::vvector(std::vector<T> &v) const
 	{

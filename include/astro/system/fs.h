@@ -17,17 +17,32 @@ namespace peyton {
 		DERIVE_EXCEPTION(EEnvVarNotSet, EEnvVar);
 	}
 
-	namespace system {
+	namespace io {
+		/// useful utilities
+		bool file_exists(const std::string &s);	/// test file existence
+		off_t file_size(const std::string &s);	/// get file size
 
+		/// useful macros
+		#define FILE_EXISTS_OR_THROW(fn) \
+			if(!peyton::io::file_exists(fn)) { THROW(EIOException, "Could not access file " + fn); }
+#if 0
 		/// class representing a filename/path
 		class Filename : public std::string
 		{
 		public:
 			Filename(const std::string &fn) : std::string(fn) {}
 			bool exists() const;
-			long long size() const;
+			off_t size() const;
 		};
+#endif
+		class dir : public std::vector<std::string>
+		{
+			public:
+				dir(const std::string &path);
+		};
+	}
 
+	namespace system {
 		/// class representing an environment variable
 		class EnvVar
 		{
@@ -54,15 +69,10 @@ namespace peyton {
 
 		OSTREAM(const EnvVar &v);
 
-		class dir : public std::vector<std::string>
-		{
-		public:
-			dir(const std::string &path);
-		};
-
 	}
 }
 
 #define __peyton_system peyton::system
+#define __peyton_io peyton::io
 
 #endif

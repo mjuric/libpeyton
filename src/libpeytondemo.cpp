@@ -1,5 +1,5 @@
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h"
 #endif
 
 #include <astro/sdss/photometry.h>
@@ -54,11 +54,26 @@ void moduloTest()
 	}
 }
 
+int config_test()
+{
+	Config cfg;
+	cfg.load("observe.conf");
+
+	std::set<std::string> keys;
+	cfg.get_matching_keys(keys, "module\\[.+\\]");
+
+	FOREACH(keys) { std::cout << *i << " "; }
+	std::cout << "\n";
+
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	//return 0;
 	//moduloTest(); return 0;
 
+	return config_test();
 	return test_options(argc, argv);
 	return demo_binarystream();
 	return main_fpnumber(argc, argv);

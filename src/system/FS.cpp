@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 using namespace peyton::system;
+using namespace peyton::io;
 using namespace peyton::exceptions;
 
 const char *EnvVar::c_str() const
@@ -57,16 +58,31 @@ namespace system {
 
 ///////////////////////////////////////
 // for Filename methods
-bool Filename::exists() const
+bool peyton::io::file_exists(const std::string &s)
 {
 	struct stat buf;
-	return stat(c_str(), &buf) == 0;
+	return stat(s.c_str(), &buf) == 0;
 }
 
-long long Filename::size() const
+off_t file_size(const std::string &s)
+{
+	struct stat buf;
+	if(stat(s.c_str(), &buf)) { THROW(EIOException, "Failed to stat() file [" + s + "]"); }
+
+	return buf.st_size;
+}
+
+#if 0
+bool Filename::exists() const
+{
+	return file_exists(*this);
+}
+
+off_t Filename::size() const
 {
 	struct stat buf;
 	if(stat(c_str(), &buf)) { THROW(EIOException, "Failed to stat() file [" + (*this) + "]"); }
 	
 	return buf.st_size;
 }
+#endif

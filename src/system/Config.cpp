@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include <astro/system/config.h>
 #include <astro/util.h>
 #include <astro/util/varexpand.h>
@@ -7,14 +9,37 @@
 #include <sstream>
 #include <fstream>
 
+#if HAVE_BOOST_REGEX
+#include <boost/regex.hpp>
+#endif
+
 using namespace peyton;
 using namespace peyton::system;
 using namespace peyton::exceptions;
+
+#if HAVE_BOOST_REGEX
+size_t Config::get_matching_keys(std::set<std::string> &matches, const std::string &pattern)
+{
+	boost::regex pat(pattern);
+	boost::cmatch what;
+	size_t count = 0;
+	FOREACH(*this)
+	{
+		const char *key = i->first.c_str();
+		if(!boost::regex_match(key, what, pat)) { continue; }
+
+		matches.insert(i->first);
+		count++;
+	}
+	return count;
+}
+#endif
 
 void Config::load(std::istream &in, bool expandVars)
 {
 	std::string key, value, line;
 	int lnum = 0;
+	std::map<std::string, int> keyind;
 
 	//
 	// config files consist of key-value pairs, separated by whitespace, each on a single line
@@ -37,7 +62,20 @@ void Config::load(std::istream &in, bool expandVars)
 		if(key.find_first_not_of(" \t") == std::string::npos) continue;	// empty line
 		if(key[0] == '#') continue;							// comment
 
+		// check if this is an "array push" key
+		if(key.size() > 2 && key.substr(key.size()-2) == "[]")
+		{
+			// find the next available index for this key
+			std::string key0 = key.substr(0, key.size()-2);
+			int index = keyind[key0];
 
+			do {
+				key = key0 + "[" + util::str(index) + "]";
+				index++;
+			} while(count(key));
+
+			keyind[key0] = index;
+		}
 
 		// get value and trim whitespaces
 		getline(ss, value);
