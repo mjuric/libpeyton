@@ -24,7 +24,12 @@ CVS
 DEADJOE
 # For kdevelop
 *.pcs
+*.kdevses
 # For SM users
 .smhist
 # Executables
 *.x
+# Other stuff
+Doxyfile
+optimized
+debug
