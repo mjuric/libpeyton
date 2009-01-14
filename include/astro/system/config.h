@@ -152,6 +152,9 @@ string z = config["string_value"];
 		// found.
 		size_t get_matching_keys(std::set<std::string> &matches, const std::string &pat);
 #endif
+		// copies all keyvals with keys beginning with prefix to dest, possibly stripping
+		// the prefix if requested (default=yes). Returns the number of keyvals copied.
+		int get_subset(Config &dest, const std::string &prefix, bool strip_prefix = true);
 	};
 	
 	template<typename T>

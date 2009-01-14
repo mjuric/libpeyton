@@ -35,6 +35,20 @@ size_t Config::get_matching_keys(std::set<std::string> &matches, const std::stri
 }
 #endif
 
+int Config::get_subset(Config &dest, const std::string &prefix, bool strip_prefix)
+{
+	size_t len = prefix.size();
+	size_t found = 0;
+	FOREACH(*this)
+	{
+		const char *key = i->first.c_str();
+		if(strncmp(key, prefix.c_str(), len) != 0) { continue; }
+		dest.insert(std::make_pair(std::string(key + (strip_prefix ? len : 0)), i->second));
+		found++;
+	}
+	return found;
+}
+
 void Config::load(std::istream &in, bool expandVars)
 {
 	std::string key, value, line;
