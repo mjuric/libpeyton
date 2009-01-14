@@ -4,9 +4,13 @@
 #include <astro/types.h>
 #include <astro/constants.h>
 
+#include <string>
+
 namespace peyton {
 /// Functions for manipulating and converting spherical coordinates
 namespace coordinates {
+
+	void identity(double lon, double lat, double &lon1, double &lat1);
 
 	void eclequ(double lambda, double beta, double &ra, double &dec);
 	void equecl(double ra, double dec, double &lambda, double &beta);
@@ -23,6 +27,9 @@ namespace coordinates {
 	void gcsgal(Radians node, Radians inc, Radians mu, Radians nu, Radians &l, Radians &b);
 	/// galgcs - Galactic to SDSS GCS coordinates
 	void galgcs(Radians node, Radians inc, Radians l, Radians b, Radians &mu, Radians &nu);
+
+	typedef void (*transform)(double lambda, double beta, double &ra, double &dec);
+	transform get_transform(const std::string &from, const std::string &to);
 
 	/// angular distance between two points on a sphere
 	Radians distance(Radians xr1, Radians yr1, Radians xr2, Radians yr2);

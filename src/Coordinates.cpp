@@ -241,6 +241,35 @@ coordinates::galgcs(Radians node, Radians inc, Radians l, Radians b, Radians &mu
 	coordinates::equgcs(node, inc, ra, dec, mu, nu);
 }
 
+void coordinates::identity(double lon, double lat, double &lon1, double &lat1)
+{
+	lon1 = lon;
+	lat1 = lat;
+}
+
+coordinates::transform coordinates::get_transform(const std::string &from, const std::string &to)
+{
+	if(from == "gal")
+	{
+		if(to == "equ") { return galequ; }
+		if(to == "gal") { return identity; }
+	}
+	if(from == "equ")
+	{
+		if(to == "gal") { return equgal; }
+		if(to == "ecl") { return equecl; }
+		if(to == "equ") { return identity; }
+	}
+	if(from == "ecl")
+	{
+		if(to == "equ") { return eclequ; }
+		if(to == "ecl") { return identity; }
+	}
+	return NULL;
+}
+
+
+
 Radians coordinates::distance(Radians xr1, Radians yr1, Radians xr2, Radians yr2)
 {
 	double pos1[3], pos2[3], w, cosb;
@@ -312,7 +341,7 @@ void coordinates::formatCoord(const char *fmt, char *out, const double _v)
 	double asrc[] = {floor(H), floor(M), S, H, M, floor(d), floor(m), s, d, m};
 	double arr[50] = {0};
 	int num = 0, i = 0, id;
-	char *valid = "HMSINdmsing";
+	const char *valid = "HMSINdmsing";
 	const char *c =fmt;
 
 	char buf[1000];
