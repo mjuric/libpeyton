@@ -134,15 +134,15 @@ string z = config["string_value"];
 			else set var to dflt.
 		*/
 		template <typename T>
-		bool get(T &var, const std::string &name, const T &dflt)
+		bool get(T &var, const std::string &name, const T &dflt) const
 		{
-			std::map<std::string, std::string>::iterator it = find(name);
+			std::map<std::string, std::string>::const_iterator it = find(name);
 			var = it != this->end() ? Variant((*it).second) : dflt;
 			return it != end();
 		}
 
 		// useful specialization for std::string when the default parameter is const char*
-		bool get(std::string &var, const std::string &name, const char *dflt)
+		bool get(std::string &var, const std::string &name, const char *dflt) const
 		{
 			return get<std::string>(var, name, dflt);
 		}
