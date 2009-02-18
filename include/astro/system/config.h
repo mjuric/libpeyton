@@ -44,7 +44,7 @@ var4 = To expand a key with spaces, enclose it in curly braces, eg ${key with sp
 		{
 		public:
 			long long vlonglong() const { return atoll(c_str()); }
-			int vint() const { return atoi(c_str()); }
+			int vint() const { return (int)atof(c_str()); } // Note: I use atof() to allow exponential notation for integers
 			double vdouble() const { return atof(c_str()); }
 			float vfloat() const { return atof(c_str()); }
 			bool vbool() const {
