@@ -184,9 +184,18 @@ coordinates::equecl(Radians ra, Radians dec, Radians &lambda, Radians &betha)
 }
 
 // galactic north pole (alpha, delta)
+#if 0
+// Binney-Merrifield, pg 30 (note that BM has a typo in l0 -- 123.932 instead of 122.932)
 static const double angp = ctn::d2r * 192.85948;
 static const double dngp = ctn::d2r * 27.12825;
-static const double l0 = ctn::d2r * 33; // 32.93194 == WMAP number for galactic longitude of ascending node
+static const double l0 = ctn::d2r * 32.932;
+#else
+// Appendix of Reid et al. (http://adsabs.harvard.edu/cgi-bin/bib_query?2004ApJ...616..872R)
+// This convention is also used by LAMBDA/WMAP (http://lambda.gsfc.nasa.gov/toolbox/tb_coordconv.cfm)
+static const double angp = ctn::d2r * 192.859508333; //  12h 51m 26.282s (J2000)
+static const double dngp = ctn::d2r * 27.128336111;  // +27d 07' 42.01" (J2000)
+static const double l0 = ctn::d2r * 32.932;
+#endif
 static const double ce = cos(dngp);
 static const double se = sin(dngp);
 
