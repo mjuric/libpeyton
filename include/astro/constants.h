@@ -6,9 +6,10 @@ namespace peyton {
 namespace constants {
 
 	const double pi = 3.14159265358979323846264338;
-	const double pi2 = 2*pi;
-	const double twopi = 2*pi;
+	const double pi2 = 2.*pi;
+	const double twopi = 2.*pi;
 	const double piby2 = pi/2.;
+	const double halfpi = pi/2.;
 	const double ln10 = 2.3025850929940456840;	// ln(10)
 
 	const double d2r = pi/180.0;

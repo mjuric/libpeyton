@@ -150,7 +150,7 @@ string z = config["string_value"];
 		// return all keys matching a given regular expression pattern pat. Note that the method
 		// does _not_ clear the matches set before populating it. Returns the number of matches
 		// found.
-		size_t get_matching_keys(std::set<std::string> &matches, const std::string &pat);
+		size_t get_matching_keys(std::set<std::string> &matches, const std::string &pat) const;
 #endif
 		// copies all keyvals with keys beginning with prefix to dest, possibly stripping
 		// the prefix if requested (default=yes). Returns the number of keyvals copied.

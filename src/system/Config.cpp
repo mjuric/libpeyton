@@ -18,7 +18,7 @@ using namespace peyton::system;
 using namespace peyton::exceptions;
 
 #if HAVE_BOOST_REGEX
-size_t Config::get_matching_keys(std::set<std::string> &matches, const std::string &pattern)
+size_t Config::get_matching_keys(std::set<std::string> &matches, const std::string &pattern) const
 {
 	boost::regex pat(pattern);
 	boost::cmatch what;
