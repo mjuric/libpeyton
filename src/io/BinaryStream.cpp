@@ -123,6 +123,7 @@ int demo_binarystream()
 #if 0
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/iostreams/filter/bzip2.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
 #include <boost/iostreams/device/file.hpp>
 
 void demo_binarystream_with_boost_iostreams()

@@ -64,6 +64,12 @@ namespace gzstream
     /** Create new stream from a filename
 	@param fn the filename. */
     basic_iostream(const char *fn) : stream_type(&_buf), _buf(fn, mode) {}
+    /** Open new stream from a filename
+    @param fn the filename. */
+    void open(const char* fn, std::ios_base::openmode _mode = mode)
+    {
+	_buf.open(fn, _mode);
+    }
     /** Get the streambuffer.
 	@return A pointer to the streambuf object */
     streambuf_type* rdbuf() const { return &_buf; }
