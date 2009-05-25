@@ -147,3 +147,44 @@ const Config::Variant Config::operator[](const std::string &s) const throw()
 
 	return Variant((*it).second);
 }
+
+const Config::Variant Config::get(const std::string &s) const
+{
+	const_iterator it = find(s);
+
+	if(it == end())
+	{
+		THROW(EAny, "Configuration key '" + s + "' was not set.");
+	}
+
+	return Variant((*it).second);
+}
+
+const Config::Variant Config::get_any_of(int nargs, ...) const
+{
+	va_list aq;
+	va_start(aq, nargs);
+
+	for(int i=0; i != nargs; i++)
+	{
+		char *name = va_arg(aq, char *);
+		const_iterator it = find(name);
+		if(it != end())
+		{
+			va_end(aq);
+			return Variant((*it).second);
+		}
+	}
+	va_end(aq);
+
+	va_start(aq, nargs);
+	std::ostringstream out;
+	for(int i=0; i != nargs; i++)
+	{
+		char *name = va_arg(aq, char *);
+		if(i) { out << ", "; }
+		out << name;
+	}
+	va_end(aq);
+	THROW(EAny, "None of the requested configuration keys '" + out.str() + "'were set.");
+}

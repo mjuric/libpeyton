@@ -146,6 +146,22 @@ string z = config["string_value"];
 		{
 			return get<std::string>(var, name, dflt);
 		}
+
+		/**
+			If the configuration value name exists, return cfg[name],
+			else throw exception.
+		*/
+		const Variant get(const std::string &name) const;
+
+		/**
+			If any of the configuration keys exist, return
+			their value.
+		*/
+		const Variant get_any_of(int nargs, ...) const;
+		const Variant get_any_of(const std::string &s1, const std::string &s2) const { return get_any_of(2, s1.c_str(), s2.c_str()); }
+		const Variant get_any_of(const std::string &s1, const std::string &s2, const std::string &s3) const { return get_any_of(3, s1.c_str(), s2.c_str(), s3.c_str()); }
+		const Variant get_any_of(const std::string &s1, const std::string &s2, const std::string &s3, const std::string &s4) const { return get_any_of(4, s1.c_str(), s2.c_str(), s3.c_str(), s4.c_str()); }
+
 #if HAVE_BOOST_REGEX
 		// return all keys matching a given regular expression pattern pat. Note that the method
 		// does _not_ clear the matches set before populating it. Returns the number of matches
