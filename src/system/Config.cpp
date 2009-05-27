@@ -5,6 +5,7 @@
 #include <astro/util/varexpand.h>
 #include <astro/exceptions.h>
 #include <astro/system/fs.h>
+#include <cstdarg>
 
 #include <sstream>
 #include <fstream>
