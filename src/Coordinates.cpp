@@ -231,7 +231,7 @@ coordinates::galequ(Radians l, Radians b, Radians &ra, Radians &dec)
 		) + angp;
 	dec = asin(cb*ce*sl + sb*se);
 
-	while(ra < 0) { l += ctn::pi2; }
+	while(ra < 0) { ra += ctn::pi2; }
 }
 
 void // gcsgal - SDSS GCS to Galactic coordinates
