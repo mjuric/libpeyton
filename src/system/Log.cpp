@@ -1,6 +1,8 @@
 #include <astro/system/log.h>
 #include <astro/system/fs.h>
 
+#include <boost/thread/mutex.hpp>
+
 #include <time.h>
 #include <string.h>
 #include <stdarg.h>
@@ -8,6 +10,7 @@
 #include <iostream>
 #include <algorithm>
 #include <iostream>
+#include <fstream>
 
 // for stack traces
 #include <execinfo.h>
@@ -116,43 +119,70 @@ std::string peyton::system::stacktrace()
 
 int Log::level(int newlevel)
 {
-	if(!debuggingOn) { return -10; }
-	if(newlevel < 0) { return debugLevel; }
+	if(!loggingOn) { return -10; }
+	if(newlevel < 0) { return logLevel; }
 
-	std::swap(newlevel, debugLevel);
+	std::swap(newlevel, logLevel);
 	return newlevel;
 }
 
 Log::Log(const std::string &n, int level, bool on)
-: name(n), debugLevel(level), debuggingOn(on)
+: name(n), logLevel(level), loggingOn(on), output(NULL)
 {
 	// global commands
 	{
-	EnvVar e_on("all_debug_on");
-	if(e_on) { debuggingOn = atoi(e_on.c_str()) != 0; }
-	EnvVar e_l("all_debug_level");
-	if(e_l) { debugLevel = atoi(e_l.c_str()); }
+		EnvVar e_on("all_log_on");
+		if(e_on) { loggingOn = atoi(e_on.c_str()) != 0; }
+		EnvVar e_l("all_log_level");
+		if(e_l) { logLevel = atoi(e_l.c_str()); }
 	}
 
 	// specific to this object
 	{
-	EnvVar e_on(name + "_debug_on");
-	if(e_on) { debuggingOn = atoi(e_on.c_str()) != 0; }
-	EnvVar e_l(name + "_debug_level");
-	if(e_l) { debugLevel = atoi(e_l.c_str()); }
+		EnvVar e_file(name + "_log_file");
+		if(e_file)
+		{
+			loggingOn = true;
+			// redirect logging to a file
+			output = new std::ofstream(e_file.c_str(), std::ios::app);
+			if(!output->good())
+			{
+				std::cerr << "Cannot open log file '" << e_file << "' for writing.\n";
+				abort();
+			}
+		}
+		EnvVar e_l(name + "_log_level");
+		if(e_l) { loggingOn = true; logLevel = atoi(e_l.c_str()); }
+		EnvVar e_on(name + "_log_on");
+		if(e_on) { loggingOn = atoi(e_on.c_str()) != 0; }
 	}
 
 	// make a sound if called for
 	{
-	EnvVar e_on("all_debug_list");
-	EnvVar e_on1(name + "_debug_list");
-	if(e_on || e_on1)
-	{
-		linestream(*this, -3).stream() << "Log '" << identify()
-			<< "', debug_on = " << debuggingOn << ", "
-			<< "debug_level = " << debugLevel;
+		EnvVar e_on("all_log_list");
+		EnvVar e_on1(name + "_log_list");
+		if(e_on || e_on1)
+		{
+			linestream(*this, -3).stream() << "Log '" << identify()
+				<< "', log_on = " << loggingOn << ", "
+				<< "log_level = " << logLevel;
+		}
 	}
-	}
+}
+
+int Log::m_counter = 0;
+#if LOG_THREADSAFE
+boost::mutex m_mutex;
+#endif
+
+int Log::counter()
+{
+#if LOG_THREADSAFE
+	boost::mutex::scoped_lock lock(m_mutex);
+#endif
+	m_counter++;
+	if(m_counter >= 1000) { m_counter = 0; }
+	return m_counter;
 }
 
 Log::linestream::linestream(Log &p, int level, const char *subsys)
@@ -163,8 +193,9 @@ Log::linestream::linestream(Log &p, int level, const char *subsys)
 	if(!le || (std::string)le == "0") { return; }
 
 	time_t t = time(NULL);
-	char tstr[200];
-	strftime(tstr, sizeof(tstr), "%c", localtime(&t));
+	char tt[200], tstr[200];
+	strftime(tt, sizeof(tstr), "%c", localtime(&t));
+	sprintf(tstr, "%s %03d", tt, Log::counter());
 	std::stringstream strm;
 	if(subsys)
 	{
@@ -184,6 +215,8 @@ Log::linestream::linestream(Log &p, int level, const char *subsys)
 
 Log::linestream::~linestream()
 {
+	std::ostream &out = parent.output ? *parent.output : std::cerr;
+
 	std::string ss = str();
 	size_t p0 = 0;
 	do
@@ -191,14 +224,16 @@ Log::linestream::~linestream()
 		size_t p1 = ss.find('\n', p0);
 		if(p1 == std::string::npos)
 		{
-			std::cerr << prefix << ss.substr(p0) << "\n";
+			if(p0 != ss.size()) { out << prefix << ss.substr(p0) << "\n"; }
 			break;
 		}
 
 		p1++;
-		std::cerr << prefix << ss.substr(p0, p1-p0);
+		out << prefix << ss.substr(p0, p1-p0);
 		p0 = p1;
 	} while(true);
+	
+	out.flush();
 }
 
 std::ostringstream &Log::linestream::stream()

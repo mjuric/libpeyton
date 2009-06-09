@@ -20,10 +20,14 @@ std::string stacktrace();
 class Log {
 protected:
 	char buf[1000];
+	std::ostream *output;
+
+	static int m_counter;
+	static int counter();
 
 	std::string name;
-	int debugLevel;
-	bool debuggingOn;
+	int logLevel;
+	bool loggingOn;
 public:
 #if 0
 	void write(const char *text, ...);
@@ -51,7 +55,7 @@ public:
 
 namespace logs
 {
-	extern Log peyton; ///< predefined log for libpeyton debugging
+	extern Log peyton; ///< predefined log for libpeyton logging
 	extern Log app; ///< predefined log for application messaging
 	extern Log debug; ///< predefined log for application debugging -- to be used through DLOG macro
 	extern Log message; ///< predefined log for general application messages -- to be used through MLOG macro
