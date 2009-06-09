@@ -43,10 +43,13 @@ var4 = To expand a key with spaces, enclose it in curly braces, eg ${key with sp
 		class Variant : public std::string
 		{
 		public:
-			long long vlonglong() const { return atoll(c_str()); }
-			int vint() const { return (int)atof(c_str()); } // Note: I use atof() to allow exponential notation for integers
-			double vdouble() const { return atof(c_str()); }
-			float vfloat() const { return atof(c_str()); }
+			long long vlonglong() const 		{ return (long long)		atof(c_str()); } // Note: I use atof() to allow exponential notation for integers
+			int vint() const 			{ return (int)			atof(c_str()); } // Note: I use atof() to allow exponential notation for integers
+			unsigned vunsigned() const 		{ return (unsigned)		atof(c_str()); } // Note: I use atof() to allow exponential notation for integers
+			unsigned long vulong() const 		{ return (unsigned long)	atof(c_str()); } // Note: I use atof() to allow exponential notation for integers
+			unsigned long long vullong() const 	{ return (unsigned long long)	atof(c_str()); } // Note: I use atof() to allow exponential notation for integers
+			double vdouble() const 			{ return atof(c_str()); }
+			float vfloat() const 			{ return atof(c_str()); }
 			bool vbool() const {
 				if(*this == "true") return true;
 				if(*this == "false") return false;
@@ -58,6 +61,9 @@ var4 = To expand a key with spaces, enclose it in curly braces, eg ${key with sp
 			operator double() const { return vdouble(); }
 			operator float() const { return vfloat(); }
 			operator bool() const { return vbool(); }
+			operator unsigned() const { return vunsigned(); }
+			operator unsigned long() const { return vulong(); }
+			operator unsigned long long() const { return vullong(); }
 
 			template<typename A, typename B>
 			operator std::pair<A, B>() const
