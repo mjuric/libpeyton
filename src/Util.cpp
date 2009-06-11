@@ -27,6 +27,17 @@ util::approxSunLongitude(MJD time)
 	return l*ctn::d2r;
 }
 
+std::string util::pad(const std::string &s, size_t n, char c)
+{
+	std::string ret(s);
+	ret.reserve(n+1);
+	for(int i = ret.size(); i != n; i++)
+	{
+		ret += c;
+	}
+	return ret;
+}
+
 char *util::trim(char *dest, const char *src)
 {
 	int cnt = 0;

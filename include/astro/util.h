@@ -33,6 +33,9 @@ namespace util {
 	/** \deprecated Use the version which takes std::string as an argument */
 	char *trim(char *dest, const char *src);
 
+	/// pad to given number of characters
+	std::string pad(const std::string &s, size_t n, char c = ' ');
+
 	/// Convert all occurences of \\" and \\' in a string to " and '
 	std::string unescape(const std::string &str);
 

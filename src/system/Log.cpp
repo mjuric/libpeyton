@@ -1,5 +1,6 @@
 #include <astro/system/log.h>
 #include <astro/system/fs.h>
+#include <astro/ui/term.h>
 
 #include <boost/thread/mutex.hpp>
 
@@ -23,7 +24,7 @@ using namespace peyton::system;
 LOG_DEFINE(peyton, exception, true);
 LOG_DEFINE(app, verb1, true);
 LOG_DEFINE(debug, verb5, false);
-LOG_DEFINE(message, verb2, true);
+LOG_DEFINE(message, verb1, true);
 
 /* Obtain a backtrace and print it to stdout. */
 void peyton::system::print_trace()
@@ -185,10 +186,11 @@ int Log::counter()
 	return m_counter;
 }
 
+static EnvVar le("LOGGING");
+
 Log::linestream::linestream(Log &p, int level, const char *subsys)
 : parent(p), std::ostringstream()
 {
-	EnvVar le("LOGGING");
 //	if(level == exception && (!le || (std::string)le == "0")) { return; }
 	if(!le || (std::string)le == "0") { return; }
 
@@ -215,9 +217,43 @@ Log::linestream::linestream(Log &p, int level, const char *subsys)
 
 Log::linestream::~linestream()
 {
+	std::string ss = str();
 	std::ostream &out = parent.output ? *parent.output : std::cerr;
 
-	std::string ss = str();
+	bool logging = le && (std::string)le != "0";
+
+	// turn on fancyness if we're writing to console
+	if(&out == &std::cerr && !logging)
+	{
+		using namespace peyton::ui::term;
+
+		// detect ':' and make everything before it bold, if it looks like a short heading
+		size_t semi = ss.find(':');
+		if(semi != std::string::npos && semi < TAB1)
+		{
+			std::ostringstream oss;
+			char padding[TAB1+1]; memset(padding, ' ', TAB1); padding[TAB1-1] = ':'; padding[TAB1] = 0;
+			memcpy(padding, ss.c_str(), semi);
+			oss << BOLD << padding << OFF << ss.substr(semi+1);
+			ss = oss.str();
+		}
+
+		// detect the words "WARNING" or "ERROR" and print it out in reverse video
+		static const char *rwords[] = { "WARNING", "ERROR" };
+		FOR(0, 2)
+		{
+			const char *word = rwords[i];
+			int len = strlen(word);
+
+			size_t at = 0;
+			while((at = ss.find(word, at)) != std::string::npos)
+			{
+				ss.replace(at, len, REVERSE + word + OFF);
+				at += len;
+			}
+		}
+	}
+
 	size_t p0 = 0;
 	do
 	{
