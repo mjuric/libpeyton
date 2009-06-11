@@ -16,12 +16,12 @@ namespace util {
 	// This recursively expands the given hashtable
 	// Usefull for eg. loading config files and expanding the names
 	//
-	bool expand_dict(std::map<std::string, std::string> &dictionary);
+	bool expand_dict(std::map<std::string, std::string> &dictionary, bool allowEnvironmentVariables);
 
 	//	
 	// This expands the text, given a hashtable
 	//
-	std::string expand_text(std::string text, std::map<std::string, std::string> &dictionary);
+	std::string expand_text(std::string text, std::map<std::string, std::string> &dictionary, bool allowEnvironmentVariables);
 
 }
 }

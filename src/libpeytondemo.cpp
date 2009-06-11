@@ -65,6 +65,8 @@ int config_test()
 	FOREACH(keys) { std::cout << *i << " "; }
 	std::cout << "\n";
 
+	std::cout << "myhome = " << cfg["myhome"] << "\n";
+
 	return 0;
 }
 

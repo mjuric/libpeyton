@@ -93,30 +93,33 @@ var4 = To expand a key with spaces, enclose it in curly braces, eg ${key with sp
 			@param defaults		Text of the default configuration (not a filename!). This text
 							will be loaded into sstringstream and passed to load().
 			@param expandVars		Should variable expansion be performed
+			@param allowEnvironmentVariables		If variable to be expanded cannot be found in the file, should it be searched in the environment.
 
 			@throws peyton::exceptions::EAny		Throws an EAny exception in case anything goes wrong
 		*/
-		Config(const std::string &filename = "", const std::string &defaults = "", bool expandVars = true);
+		Config(const std::string &filename = "", const std::string &defaults = "", bool expandVars = true, bool allowEnvironmentVariables = true);
 
 		/**
 			Loads configuration from file, optionally expanding the variables referenced in the values.
 
 			@param filename		Path to the config file (eg. /home/joe/x.conf)
 			@param expandVars		Should the variables in the file be automatically expanded
+			@param allowEnvironmentVariables		If variable to be expanded cannot be found in the file, should it be searched in the environment.
 			
 			@throws peyton::exceptions::EAny		Throws an EAny exception in case anything goes wrong
 		*/
-		void load(const std::string &filename, bool expandVars = true);
+		void load(const std::string &filename, bool expandVars = true, bool allowEnvironmentVariables = true);
 
 		/**
 			Loads configuration from stream, optionally expanding the variables referenced in the values.
 
 			@param in			Stream from which to load the configuration
 			@param expandVars		Should the variables in the file be automatically expanded
+			@param allowEnvironmentVariables		If variable to be expanded cannot be found in the file, should it be searched in the environment.
 
 			@throws peyton::exceptions::EAny		Throws an EAny exception in case anything goes wrong
 		*/
-		void load(std::istream &in, bool expandVars = true);
+		void load(std::istream &in, bool expandVars = true, bool allowEnvironmentVariables = true);
 
 		/**
 			Accessor for easy casting of configuration values to different types. Configuration

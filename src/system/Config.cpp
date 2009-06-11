@@ -50,7 +50,7 @@ int Config::get_subset(Config &dest, const std::string &prefix, bool strip_prefi
 	return found;
 }
 
-void Config::load(std::istream &in, bool expandVars)
+void Config::load(std::istream &in, bool expandVars, bool allowEnvironmentVariables)
 {
 	std::string key, value, line;
 	int lnum = 0;
@@ -110,10 +110,10 @@ void Config::load(std::istream &in, bool expandVars)
 		//std::cout << key << " -> " << value << "\n";
 	} while(!in.eof());
 
-	if(expandVars) { util::expand_dict(*this); }
+	if(expandVars) { util::expand_dict(*this, allowEnvironmentVariables); }
 }
 
-void Config::load(const std::string &filename, bool expandVars)
+void Config::load(const std::string &filename, bool expandVars, bool allowEnvironmentVariables)
 {
 	std::ifstream f(filename.c_str());
 	if(!f.good()) { THROW(EFile, "Could not open [" + filename + "] file"); }
@@ -121,7 +121,7 @@ void Config::load(const std::string &filename, bool expandVars)
 	load(f, expandVars);
 }
 
-Config::Config(const std::string &filename, const std::string &defaults, const bool expandVars)
+Config::Config(const std::string &filename, const std::string &defaults, const bool expandVars, bool allowEnvironmentVariables)
 {
 	if(defaults.size())
 	{
@@ -134,7 +134,7 @@ Config::Config(const std::string &filename, const std::string &defaults, const b
 		load(filename, false);
 	}
 
-	if(expandVars) { util::expand_dict(*this); }
+	if(expandVars) { util::expand_dict(*this, allowEnvironmentVariables); }
 }
 
 const Config::Variant Config::operator[](const std::string &s) const throw()

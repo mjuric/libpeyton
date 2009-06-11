@@ -1,5 +1,6 @@
 #include <astro/util.h>
 #include <astro/util/varexpand.h>
+#include <astro/system/fs.h>
 
 #include <astro/constants.h>
 #include <astro/time.h>
@@ -109,7 +110,7 @@ inline bool isvarchar(const char ch)
 	return false;
 }
 
-std::string expand_variable(std::string value, std::map<std::string, std::string> &h, const std::string &key = "", std::map<std::string, bool> *expanded = NULL)
+std::string expand_variable(std::string value, std::map<std::string, std::string> &h, bool allowEnvironmentVariables, const std::string &key = "", std::map<std::string, bool> *expanded = NULL)
 {
 	int at = 0, len;
 
@@ -148,9 +149,17 @@ std::string expand_variable(std::string value, std::map<std::string, std::string
 			//std::cout << "\t" << name << " exists\n";
 			if(key.size() && !expanded->count(name))
 			{
-				expand_variable(h[name], h, name, expanded);
+				expand_variable(h[name], h, allowEnvironmentVariables, name, expanded);
 			}
 			value.replace(idx, len, h[name]);
+		}
+		else if(allowEnvironmentVariables)
+		{
+			peyton::system::EnvVar env(name);
+			if(env)
+			{
+				value.replace(idx, len, env);
+			}
 		}
 		else
 		{
@@ -170,7 +179,7 @@ std::string expand_variable(std::string value, std::map<std::string, std::string
 	return value;
 }
 
-bool util::expand_dict(std::map<std::string, std::string> &h)
+bool util::expand_dict(std::map<std::string, std::string> &h, bool allowEnvironmentVariables)
 {
 	//std::cout << "\n\nexpanding variables\n";
 
@@ -180,14 +189,14 @@ bool util::expand_dict(std::map<std::string, std::string> &h)
 	{
 		if(!expanded.count((*i).first))
 		{
-			expand_variable((*i).second, h, (*i).first, &expanded);
+			expand_variable((*i).second, h, allowEnvironmentVariables, (*i).first, &expanded);
 		}
 		//std::cout << (*i).first << " -> " << (*i).second << "\n";
 	}
 	return true;
 }
 
-std::string util::expand_text(std::string text, std::map<std::string, std::string> &dictionary)
+std::string util::expand_text(std::string text, std::map<std::string, std::string> &dictionary, bool allowEnvironmentVariables)
 {
-	return expand_variable(text, dictionary);
+	return expand_variable(text, dictionary, allowEnvironmentVariables);
 }
