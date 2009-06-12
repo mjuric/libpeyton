@@ -136,6 +136,7 @@ std::string expand_variable(std::string value, std::map<std::string, std::string
 		if(idx == std::string::npos) { break; }
 		if(idx+1 == value.size()) { break; }
 
+		int at0 = at;
 		// extract variable name
 		if(value[idx+1] == '{')
 		{
@@ -171,11 +172,16 @@ std::string expand_variable(std::string value, std::map<std::string, std::string
 			{
 				value.replace(idx, len, env);
 			}
+			else
+			{
+				value.erase(idx, len);
+			}
 		}
 		else
 		{
 			value.erase(idx, len);
 		}
+		at = at0;
 
 		//std::cout << "\tvalue=" << value << "\n";
 	} while(true);
