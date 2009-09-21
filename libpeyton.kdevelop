@@ -12,28 +12,36 @@
     </keywords>
     <projectdirectory>.</projectdirectory>
     <absoluteprojectpath>false</absoluteprojectpath>
-    <description/>
+    <description></description>
     <ignoreparts/>
     <secondaryLanguages/>
     <projectname>libpeyton</projectname>
-    <defaultencoding/>
+    <defaultencoding></defaultencoding>
   </general>
   <kdevautoproject>
     <general>
       <activetarget>src/libpeytondemo</activetarget>
-      <useconfiguration>debug</useconfiguration>
+      <useconfiguration>optimized</useconfiguration>
     </general>
     <run>
-      <mainprogram>src/libpeytondemo</mainprogram>
+      <mainprogram/>
       <terminal>true</terminal>
       <directoryradio>executable</directoryradio>
       <customdirectory>/</customdirectory>
       <programargs>footprint -h</programargs>
       <autocompile>true</autocompile>
-      <envvars/>
+      <envvars>
+        <envvar value="-2" name="RAA" />
+        <envvar value="2" name="RAB" />
+      </envvars>
       <runarguments>
         <libpeytondemo/>
       </runarguments>
+      <globaldebugarguments/>
+      <globalcwd>/home/mjuric/projects/libpeyton/debug</globalcwd>
+      <useglobalprogram>false</useglobalprogram>
+      <autoinstall>false</autoinstall>
+      <autokdesu>false</autokdesu>
     </run>
     <configurations>
       <optimized>
@@ -43,13 +51,13 @@
         <f77compiler>kdevg77options</f77compiler>
         <cxxflags>-O2 -Wstrict-aliasing</cxxflags>
         <configargs>--enable-debug=full --prefix=/home/mjuric/projects/libpeyton/workspace --with-CCfits=/usr/local --with-CCfits-include=/usr/local/include/CCfits</configargs>
-        <topsourcedir/>
-        <cppflags/>
-        <ldflags/>
-        <ccompilerbinary/>
-        <cxxcompilerbinary/>
+        <topsourcedir></topsourcedir>
+        <cppflags></cppflags>
+        <ldflags></ldflags>
+        <ccompilerbinary></ccompilerbinary>
+        <cxxcompilerbinary></cxxcompilerbinary>
         <f77compilerbinary>gfortran411</f77compilerbinary>
-        <cflags/>
+        <cflags></cflags>
         <f77flags>-O2 -Wstrict-aliasing</f77flags>
         <envvars/>
       </optimized>
@@ -97,6 +105,7 @@
       <dontact>false</dontact>
       <makebin/>
       <prio>0</prio>
+      <runmultiplejobs>false</runmultiplejobs>
     </make>
   </kdevautoproject>
   <kdevfilecreate>
@@ -149,7 +158,7 @@
       <includePaths>.;</includePaths>
     </codecompletion>
     <creategettersetter>
-      <prefixGet/>
+      <prefixGet></prefixGet>
       <prefixSet>set</prefixSet>
       <prefixVariable>m_,_</prefixVariable>
       <parameterName>theValue</parameterName>
@@ -192,11 +201,11 @@
   <kdevdebugger>
     <general>
       <programargs/>
-      <gdbpath/>
-      <dbgshell/>
-      <configGdbScript/>
-      <runShellScript/>
-      <runGdbScript/>
+      <gdbpath></gdbpath>
+      <dbgshell></dbgshell>
+      <configGdbScript></configGdbScript>
+      <runShellScript></runShellScript>
+      <runGdbScript></runGdbScript>
       <breakonloadinglibs>true</breakonloadinglibs>
       <separatetty>false</separatetty>
       <floatingtoolbar>false</floatingtoolbar>

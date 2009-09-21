@@ -16,6 +16,9 @@ AC_PROG_CXX
 # AM_PROG_LIBTOOL
 AC_PROG_RANLIB
 
+# Force emission of position-independent code
+CXXFLAGS="$CXXFLAGS -fPIC"
+
 # hacks to recognize Portland Group compiler
 #
 if test "${CXX}" == pgCC; then
