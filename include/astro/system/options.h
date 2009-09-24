@@ -125,6 +125,20 @@ namespace opt
 		virtual ~binding() {};
 	};
 
+	// specialize for integral types, so they may be given in exponential notation
+	inline double readval(std::istream &in, bool &isset)
+	{
+		double tmp;
+		isset = in >> tmp;
+		return tmp;
+	}
+	template<> inline std::istream &binding<int>::setval(std::istream &in)			{ var = readval(in, isset); return in; }
+	template<> inline std::istream &binding<unsigned int>::setval(std::istream &in)		{ var = readval(in, isset); return in; }
+	template<> inline std::istream &binding<long>::setval(std::istream &in)			{ var = readval(in, isset); return in; }
+	template<> inline std::istream &binding<unsigned long>::setval(std::istream &in)	{ var = readval(in, isset); return in; }
+	template<> inline std::istream &binding<long long>::setval(std::istream &in)		{ var = readval(in, isset); return in; }
+	template<> inline std::istream &binding<unsigned long long>::setval(std::istream &in)	{ var = readval(in, isset); return in; }
+
 	template<typename T>
 		void any::reset(T &t)
 		{
