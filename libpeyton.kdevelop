@@ -24,20 +24,21 @@
       <useconfiguration>debug</useconfiguration>
     </general>
     <run>
-      <mainprogram/>
+      <mainprogram>/home/mjuric/projects/libpeyton/debug</mainprogram>
       <terminal>true</terminal>
       <directoryradio>executable</directoryradio>
       <customdirectory>/</customdirectory>
       <programargs>footprint -h</programargs>
       <autocompile>true</autocompile>
       <envvars>
+        <envvar value="5" name="all_log_level" />
         <envvar value="-2" name="RAA" />
         <envvar value="2" name="RAB" />
       </envvars>
       <runarguments>
         <libpeytondemo/>
       </runarguments>
-      <globaldebugarguments/>
+      <globaldebugarguments></globaldebugarguments>
       <globalcwd>/home/mjuric/projects/libpeyton/debug</globalcwd>
       <useglobalprogram>false</useglobalprogram>
       <autoinstall>false</autoinstall>
@@ -51,13 +52,13 @@
         <f77compiler>kdevg77options</f77compiler>
         <cxxflags>-O2 -Wstrict-aliasing</cxxflags>
         <configargs>--enable-debug=full --prefix=/home/mjuric/projects/libpeyton/workspace --with-CCfits=/usr/local --with-CCfits-include=/usr/local/include/CCfits</configargs>
-        <topsourcedir></topsourcedir>
-        <cppflags></cppflags>
-        <ldflags></ldflags>
-        <ccompilerbinary></ccompilerbinary>
-        <cxxcompilerbinary></cxxcompilerbinary>
+        <topsourcedir/>
+        <cppflags/>
+        <ldflags/>
+        <ccompilerbinary/>
+        <cxxcompilerbinary/>
         <f77compilerbinary>gfortran411</f77compilerbinary>
-        <cflags></cflags>
+        <cflags/>
         <f77flags>-O2 -Wstrict-aliasing</f77flags>
         <envvars/>
       </optimized>

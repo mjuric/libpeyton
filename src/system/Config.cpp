@@ -95,7 +95,7 @@ void Config::load(std::istream &in, bool expandVars, bool allowEnvironmentVariab
 		// get value and trim whitespaces
 		getline(ss, value);
 		value = Util::ltrim(value);
-		if(value.size() == 0) { THROW(EAny, "No value specified in config file at line " + util::str(lnum)); }
+		//if(value.size() == 0) { THROW(EAny, "No value specified in config file at line " + util::str(lnum)) + "(key = " + key + ")"; }
 
 		// check if the string is quoted
 		if(value[0] == '"')

@@ -14,6 +14,7 @@
 #include <string>
 #include <map>
 #include <iostream>
+#include <fstream>
 
 using namespace peyton;
 
@@ -124,6 +125,7 @@ inline bool isvarchar(const char ch)
 std::string expand_variable(std::string value, std::map<std::string, std::string> &h, bool allowEnvironmentVariables, const std::string &key = "", std::map<std::string, bool> *expanded = NULL)
 {
 	int at = 0, len;
+	std::string value0(value);
 
 	//std::cout << "Expanding " << key << "\n";
 
@@ -135,6 +137,13 @@ std::string expand_variable(std::string value, std::map<std::string, std::string
 
 		if(idx == std::string::npos) { break; }
 		if(idx+1 == value.size()) { break; }
+
+		// skip parsing of artithmetic expressions (the next loop will do that)
+		if(value[idx+1] == '(')
+		{
+			at++;
+			continue;
+		}
 
 		int at0 = at;
 		// extract variable name
@@ -156,6 +165,7 @@ std::string expand_variable(std::string value, std::map<std::string, std::string
 		}
 		//std::cout << "\tname=" << name << "\n";
 
+		bool foundvar = false;
 		if(h.count(name))
 		{
 			//std::cout << "\t" << name << " exists\n";
@@ -164,6 +174,7 @@ std::string expand_variable(std::string value, std::map<std::string, std::string
 				expand_variable(h[name], h, allowEnvironmentVariables, name, expanded);
 			}
 			value.replace(idx, len, h[name]);
+			foundvar = true;
 		}
 		else if(allowEnvironmentVariables)
 		{
@@ -171,21 +182,80 @@ std::string expand_variable(std::string value, std::map<std::string, std::string
 			if(env)
 			{
 				value.replace(idx, len, env);
-			}
-			else
-			{
-				value.erase(idx, len);
+				foundvar = true;
 			}
 		}
-		else
+
+		if(!foundvar)
 		{
 			value.erase(idx, len);
+			MLOG(verb2) << "Variable '" << name << "' not found (while expanding '" << value0 << "')";
 		}
 		at = at0;
 
 		//std::cout << "\tvalue=" << value << "\n";
 	} while(true);
-	
+
+	// expand arithmetic expressions
+	if(allowEnvironmentVariables)
+	{
+		at = 0;
+		while(true)
+		{
+			int idx = value.find("$(", at);
+
+			if(idx == std::string::npos) { break; }
+			if(idx+1 == value.size()) { break; }
+
+			// find the closing parenthesis of the expression, noting that
+			// the expression itself may contain parentheses
+			at = idx+2;
+			int pths = 1;
+			while(at < value.size() && pths)
+			{
+				if(value[at] == '(') { pths++; }
+				if(value[at] == ')') { pths--; }
+				at++;
+			}
+			ASSERT(pths == 0);
+			len = at - idx;
+			std::string expr = value.substr(idx + 2, len - 3);
+			expr += "\n";
+
+			// evaluate arithmetic expressions by constructing a PERL statement
+			// WARNING: HACK: NOTE: THIS IS TERRIBLY, HORRIBLY, UNSAFE FROM
+			// A SECURITY STANDPOINT !!!.
+			char *tmpfile = tempnam(NULL, NULL);
+			std::string cmd = std::string("perl > '") + tmpfile + "'";
+			FILE *pipe = popen(cmd.c_str(), "w");
+			ASSERT(pipe != NULL);
+			fprintf(pipe, "print (");
+			fwrite(expr.c_str(), expr.size(), 1, pipe);
+			fprintf(pipe, ");");
+			pclose(pipe);
+
+			// load the result
+			std::ifstream res(tmpfile);
+			std::string line;
+			expr.clear();
+			while(std::getline(res, line))
+			{
+				if(!expr.empty()) { expr += "\n"; }
+				expr += line;
+			}
+
+			// clean up
+			unlink(tmpfile);
+			free(tmpfile);
+
+			// replace with evaulation result
+			value.replace(idx, len, expr);
+
+			//std::cout << "\tvalue=" << value << "\n";
+		};
+	}
+	//std::cout << "\tvalue=" << value << "\n";
+
 	if(key.size())
 	{
 		(*expanded)[key] = true;
