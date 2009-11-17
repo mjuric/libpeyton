@@ -24,20 +24,21 @@
       <useconfiguration>debug</useconfiguration>
     </general>
     <run>
-      <mainprogram/>
+      <mainprogram>/home/mjuric/projects/libpeyton/debug</mainprogram>
       <terminal>true</terminal>
       <directoryradio>executable</directoryradio>
       <customdirectory>/</customdirectory>
       <programargs>footprint -h</programargs>
       <autocompile>true</autocompile>
       <envvars>
+        <envvar value="5" name="all_log_level" />
         <envvar value="-2" name="RAA" />
         <envvar value="2" name="RAB" />
       </envvars>
       <runarguments>
         <libpeytondemo/>
       </runarguments>
-      <globaldebugarguments/>
+      <globaldebugarguments></globaldebugarguments>
       <globalcwd>/home/mjuric/projects/libpeyton/debug</globalcwd>
       <useglobalprogram>false</useglobalprogram>
       <autoinstall>false</autoinstall>

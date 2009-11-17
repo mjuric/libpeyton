@@ -70,11 +70,28 @@ int config_test()
 	return 0;
 }
 
+int config_expr_test()
+{
+	Config cfg;
+	std::string file =
+"\
+R = 33\n\
+test = some${notexists}thing$(2+$R*(7/2))there${R}_$((2)+4*cos(2.11))\n\
+";
+	std::istringstream in(file.c_str());
+	cfg.load(in);
+
+	std::cout << "test = " << cfg["test"] << "\n";
+
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	//return 0;
 	//moduloTest(); return 0;
 
+	return config_expr_test();
 	return config_test();
 	return test_options(argc, argv);
 	return demo_binarystream();
