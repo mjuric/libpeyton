@@ -8,7 +8,8 @@
 #include <string>
 #include <memory.h>
 #include <ctype.h>
-#include <stdio.h>
+#include <cstdio>
+#include <cstdlib>
 #include <cxxabi.h>
 
 #ifndef NULL

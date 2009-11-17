@@ -2,7 +2,8 @@
 #include <astro/time.h>
 #include <astro/system/log.h>
 
-#include <stdio.h>
+#include <cstdio>
+#include <cstdlib>
 
 #include "MPCCatalog.h"
 
@@ -75,7 +76,7 @@ int MPCCatalog::read(Asteroid &obj, const int id)
 	int i;
 	for(i = 0; i != 14; i++) buffers[i][blimits[i]] = 0;
 
-	obj.numeration = atoi(buffers[0]);
+	obj.numeration = std::atoi(buffers[0]);
 
 	for(i = Asteroid::maxNameLen-1; i != -1 && buffers[1][i] == ' '; i--);
 	buffers[1][i+1] = 0;

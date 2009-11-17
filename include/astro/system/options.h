@@ -10,6 +10,8 @@
 #include <string>
 #include <iostream>
 
+#include <auto_ptr.h>
+
 namespace peyton {
 
 namespace exceptions {

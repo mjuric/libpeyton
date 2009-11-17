@@ -8,6 +8,7 @@
 #include <astro/exceptions.h>
 
 #include <sstream>
+#include <cstdlib>
 
 static std::string conversions("diouxXeEfFgGaAcCsSpn");
 static std::string flags("#0- +'I");

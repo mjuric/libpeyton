@@ -1,6 +1,7 @@
 #include <astro/system/log.h>
 
-#include <stdio.h>
+#include <cstdio>
+#include <cstdlib>
 
 #include "NativeCatalog.h"
 

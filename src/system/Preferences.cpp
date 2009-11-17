@@ -5,7 +5,9 @@
 #include <astro/system/error.h>
 
 #include <fstream>
-#include <stdio.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <unistd.h>
 
 using namespace peyton;

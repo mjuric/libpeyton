@@ -19,6 +19,7 @@
 
 #include <cstdlib>
 #include <cmath>
+#include <cstring>
 #include <iostream>
 #include <fstream>
 #include <sstream>

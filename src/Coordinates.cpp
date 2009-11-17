@@ -325,7 +325,7 @@ bool coordinates::inBox(double ra, double dec, double ralo, double declo, double
 
 inline int str_find(const char *where, const char what)
 {
-	char *c = strchr(where, what);
+	const char *c = strchr(where, what);
 	if(c == NULL) return -1;
 	return c - where;
 }

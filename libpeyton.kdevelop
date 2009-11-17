@@ -12,11 +12,11 @@
     </keywords>
     <projectdirectory>.</projectdirectory>
     <absoluteprojectpath>false</absoluteprojectpath>
-    <description></description>
+    <description/>
     <ignoreparts/>
     <secondaryLanguages/>
     <projectname>libpeyton</projectname>
-    <defaultencoding></defaultencoding>
+    <defaultencoding/>
   </general>
   <kdevautoproject>
     <general>
@@ -51,13 +51,13 @@
         <f77compiler>kdevg77options</f77compiler>
         <cxxflags>-O2 -Wstrict-aliasing</cxxflags>
         <configargs>--enable-debug=full --prefix=/home/mjuric/projects/libpeyton/workspace --with-CCfits=/usr/local --with-CCfits-include=/usr/local/include/CCfits</configargs>
-        <topsourcedir></topsourcedir>
-        <cppflags></cppflags>
-        <ldflags></ldflags>
-        <ccompilerbinary></ccompilerbinary>
-        <cxxcompilerbinary></cxxcompilerbinary>
+        <topsourcedir/>
+        <cppflags/>
+        <ldflags/>
+        <ccompilerbinary/>
+        <cxxcompilerbinary/>
         <f77compilerbinary>gfortran411</f77compilerbinary>
-        <cflags></cflags>
+        <cflags/>
         <f77flags>-O2 -Wstrict-aliasing</f77flags>
         <envvars/>
       </optimized>
@@ -158,7 +158,7 @@
       <includePaths>.;</includePaths>
     </codecompletion>
     <creategettersetter>
-      <prefixGet></prefixGet>
+      <prefixGet/>
       <prefixSet>set</prefixSet>
       <prefixVariable>m_,_</prefixVariable>
       <parameterName>theValue</parameterName>
@@ -169,10 +169,10 @@
       <used>false</used>
       <version>3</version>
       <includestyle>3</includestyle>
-      <root></root>
+      <root>/usr/lib64/qt-3.3</root>
       <designerintegration>EmbeddedKDevDesigner</designerintegration>
-      <qmake></qmake>
-      <designer></designer>
+      <qmake>/usr/lib64/qt-3.3/bin/qmake</qmake>
+      <designer>/usr/lib64/qt-3.3/bin/designer</designer>
       <designerpluginpaths/>
     </qt>
     <splitheadersource>
@@ -201,11 +201,11 @@
   <kdevdebugger>
     <general>
       <programargs/>
-      <gdbpath></gdbpath>
-      <dbgshell></dbgshell>
-      <configGdbScript></configGdbScript>
-      <runShellScript></runShellScript>
-      <runGdbScript></runGdbScript>
+      <gdbpath/>
+      <dbgshell/>
+      <configGdbScript/>
+      <runShellScript/>
+      <runGdbScript/>
       <breakonloadinglibs>true</breakonloadinglibs>
       <separatetty>false</separatetty>
       <floatingtoolbar>false</floatingtoolbar>

@@ -6,6 +6,7 @@
 #include <sstream>
 #include <vector>
 #include <set>
+#include <cstdlib>
 
 namespace peyton {
 namespace system {

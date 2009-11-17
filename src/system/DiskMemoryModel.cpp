@@ -10,10 +10,11 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <fstream.h>
+#include <fstream>
 
 #include <deque>
 #include <map>
+#include <memory>
 
 #include <astro/useall.h>
 using namespace std;
@@ -740,7 +741,7 @@ MemoryMap *DiskMemoryModel::openmm(Window &w, int fileoffset)
 {
 	closemm(w);
 
-	auto_ptr<MemoryMap> mm(new MemoryMap);
+	std::auto_ptr<MemoryMap> mm(new MemoryMap);
 
 	mm->open(w.fd, w.end - w.begin, fileoffset, prot, MAP_SHARED);
 

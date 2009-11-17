@@ -3,7 +3,8 @@
 #include <astro/exceptions.h>
 #include <astro/system/log.h>
 
-#include <stdio.h>
+#include <cstdio>
+#include <cstdlib>
 
 #include "BowellCatalog.h"
 
@@ -78,7 +79,7 @@ int BowellCatalog::read(Asteroid &obj, const int id)
 	int i;
 	for(i = 0; i != 14; i++) buffers[i][blimits[i]] = 0;
 
-	obj.numeration = atoi(buffers[0]);
+	obj.numeration = std::atoi(buffers[0]);
 	obj.type = 0; // ASTORB contains only asteroids
 
 	for(i = Asteroid::maxNameLen-1; i != -1 && buffers[1][i] == ' '; i--);
