@@ -45,6 +45,8 @@ namespace util {
 	/// convert string to uppercase
 	inline std::string toupper(const std::string &s) { std::string o(s); FOREACH2(std::string::iterator, o) { *i = ::toupper(*i); }; return o; }
 
+	/// convert long long to std::string
+	inline std::string str(long long n) { char buf[20]; sprintf(buf, "%ld", n); return buf; }
 	/// convert size_t to std::string
 	inline std::string str(size_t n) { char buf[20]; sprintf(buf, "%d", n); return buf; }
 	/// convert int to std::string
