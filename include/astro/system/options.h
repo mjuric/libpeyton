@@ -10,7 +10,7 @@
 #include <string>
 #include <iostream>
 
-#include <auto_ptr.h>
+#include <memory.h>
 
 namespace peyton {
 
@@ -134,12 +134,12 @@ namespace opt
 		isset = in >> tmp;
 		return tmp;
 	}
-	template<> inline std::istream &binding<int>::setval(std::istream &in)			{ var = readval(in, isset); return in; }
-	template<> inline std::istream &binding<unsigned int>::setval(std::istream &in)		{ var = readval(in, isset); return in; }
-	template<> inline std::istream &binding<long>::setval(std::istream &in)			{ var = readval(in, isset); return in; }
-	template<> inline std::istream &binding<unsigned long>::setval(std::istream &in)	{ var = readval(in, isset); return in; }
-	template<> inline std::istream &binding<long long>::setval(std::istream &in)		{ var = readval(in, isset); return in; }
-	template<> inline std::istream &binding<unsigned long long>::setval(std::istream &in)	{ var = readval(in, isset); return in; }
+	template<> inline std::istream &binding<int>::setval(std::istream &in)			{ var = (int)readval(in, isset); return in; }
+	template<> inline std::istream &binding<unsigned int>::setval(std::istream &in)		{ var = (unsigned int)readval(in, isset); return in; }
+	template<> inline std::istream &binding<long>::setval(std::istream &in)			{ var = (long)readval(in, isset); return in; }
+	template<> inline std::istream &binding<unsigned long>::setval(std::istream &in)	{ var = (unsigned long)readval(in, isset); return in; }
+	template<> inline std::istream &binding<long long>::setval(std::istream &in)		{ var = (long long)readval(in, isset); return in; }
+	template<> inline std::istream &binding<unsigned long long>::setval(std::istream &in)	{ var = (unsigned long long)readval(in, isset); return in; }
 
 	template<typename T>
 		void any::reset(T &t)
