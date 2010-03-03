@@ -323,7 +323,10 @@ public:
 			if(sdef)
 			{
 				std::ostringstream ss;
-				this->variable.getval(ss);
+				if(parameter != Option::Required) // NOTE: This is to stop Valgrind/Memcheck complaining about using uninitialized values
+				{
+					this->variable.getval(ss);
+				}
 				def_val(ss.str());
 				deffromvar = true;
 			}

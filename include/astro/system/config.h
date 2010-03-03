@@ -84,6 +84,10 @@ var4 = To expand a key with spaces, enclose it in curly braces, eg ${key with sp
 			Variant(const std::string &s = "") : std::string(s) {}
 		};
 	public:
+		// Global definitions that will be present in _every_ (subsequently loaded) Config object
+		static Config globals;
+
+	public:
 		/**
 			Loads configuration from file, with the default configuration optionally specified
 			as second parameter. Any keys not defined in the configuration file given will be
@@ -121,6 +125,16 @@ var4 = To expand a key with spaces, enclose it in curly braces, eg ${key with sp
 			@throws peyton::exceptions::EAny		Throws an EAny exception in case anything goes wrong
 		*/
 		void load(std::istream &in, bool expandVars = true, bool allowEnvironmentVariables = true);
+
+		/**
+			Variable-expands the loaded configuration file. Typically you would use
+			this to explicitly ask for variables to be expanded after you've loaded
+			them without expansion (e.g., if you're loading from multiple files, and
+			want the expansion to occur after all the files have been loaded).
+
+			@param allowEnvironmentVariables		If variable to be expanded cannot be found in the file, should it be searched in the environment.
+		*/
+		void expandVariables(bool allowEnvironmentVariables = true);
 
 		/**
 			Accessor for easy casting of configuration values to different types. Configuration

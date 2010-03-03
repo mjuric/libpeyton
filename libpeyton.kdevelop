@@ -38,7 +38,7 @@
       <runarguments>
         <libpeytondemo/>
       </runarguments>
-      <globaldebugarguments></globaldebugarguments>
+      <globaldebugarguments/>
       <globalcwd>/home/mjuric/projects/libpeyton/debug</globalcwd>
       <useglobalprogram>false</useglobalprogram>
       <autoinstall>false</autoinstall>
@@ -102,11 +102,11 @@
         <envvar value="1" name="WANT_AUTOMAKE_1_6" />
       </envvars>
       <abortonerror>false</abortonerror>
-      <numberofjobs>1</numberofjobs>
+      <numberofjobs>8</numberofjobs>
       <dontact>false</dontact>
       <makebin/>
       <prio>0</prio>
-      <runmultiplejobs>false</runmultiplejobs>
+      <runmultiplejobs>true</runmultiplejobs>
     </make>
   </kdevautoproject>
   <kdevfilecreate>

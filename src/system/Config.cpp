@@ -105,12 +105,17 @@ void Config::load(std::istream &in, bool expandVars, bool allowEnvironmentVariab
 			value = util::unescape(value.substr(1, value.size()-2));
 		}
 
-		insert(value_type(key, value));
+		(static_cast<std::map<std::string, std::string> &>(*this))[key] = value;
 
 		//std::cout << key << " -> " << value << "\n";
 	} while(!in.eof());
 
-	if(expandVars) { util::expand_dict(*this, allowEnvironmentVariables); }
+	if(expandVars) { expandVariables(allowEnvironmentVariables); }
+}
+
+void Config::expandVariables(bool allowEnvironmentVariables)
+{
+	util::expand_dict(*this, allowEnvironmentVariables);
 }
 
 void Config::load(const std::string &filename, bool expandVars, bool allowEnvironmentVariables)
@@ -121,8 +126,17 @@ void Config::load(const std::string &filename, bool expandVars, bool allowEnviro
 	load(f, expandVars);
 }
 
+Config peyton::system::Config::globals;
+
 Config::Config(const std::string &filename, const std::string &defaults, const bool expandVars, bool allowEnvironmentVariables)
 {
+	// source globals, unless this is the globals object itself.
+	if(this != &globals)
+	{
+		*this = globals;
+	}
+
+	// load defaults
 	if(defaults.size())
 	{
 		std::stringstream ss(defaults);
@@ -134,7 +148,7 @@ Config::Config(const std::string &filename, const std::string &defaults, const b
 		load(filename, false);
 	}
 
-	if(expandVars) { util::expand_dict(*this, allowEnvironmentVariables); }
+	if(expandVars) { expandVariables(allowEnvironmentVariables); }
 }
 
 const Config::Variant Config::operator[](const std::string &s) const throw()

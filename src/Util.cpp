@@ -229,6 +229,7 @@ std::string expand_variable(std::string value, std::map<std::string, std::string
 			std::string cmd = std::string("perl > '") + tmpfile + "'";
 			FILE *pipe = popen(cmd.c_str(), "w");
 			ASSERT(pipe != NULL);
+			fprintf(pipe, "use Math::Trig; ");
 			fprintf(pipe, "print (");
 			fwrite(expr.c_str(), expr.size(), 1, pipe);
 			fprintf(pipe, ");");
