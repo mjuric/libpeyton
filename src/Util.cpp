@@ -186,12 +186,18 @@ std::string expand_variable(std::string value, std::map<std::string, std::string
 			}
 		}
 
+		at = at0;
 		if(!foundvar)
 		{
+#if 0
+			// If the variable has not been found, leave it as-is
+			// NOTE: this is a change wrt. the old behavior, where we'd just erase it.
+			at += len;
+#else
 			value.erase(idx, len);
-			MLOG(verb2) << "Variable '" << name << "' not found (while expanding '" << value0 << "')";
+#endif
+			//MLOG(verb2) << "Variable '" << name << "' not found (while expanding '" << value0 << "')";
 		}
-		at = at0;
 
 		//std::cout << "\tvalue=" << value << "\n";
 	} while(true);

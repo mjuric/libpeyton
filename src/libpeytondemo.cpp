@@ -86,11 +86,25 @@ test = some${notexists}thing$(2+$R*(7/2))there${R}_$((2)+4*cos(2.11))\n\
 	return 0;
 }
 
+int config_overrides_test()
+{
+	Config cfg;
+	cfg.load("config_overrides_test.conf{var1=first;var2=second;var3=$($var1 . '22');ext=aaa}");
+
+	FOREACH(cfg)
+	{
+		std::cout << i->first << " = " << i->second << "\n";
+	}
+
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	//return 0;
 	//moduloTest(); return 0;
 
+	return config_overrides_test();
 	return config_expr_test();
 	return config_test();
 	return test_options(argc, argv);

@@ -12,11 +12,11 @@
     </keywords>
     <projectdirectory>.</projectdirectory>
     <absoluteprojectpath>false</absoluteprojectpath>
-    <description/>
+    <description></description>
     <ignoreparts/>
     <secondaryLanguages/>
     <projectname>libpeyton</projectname>
-    <defaultencoding/>
+    <defaultencoding></defaultencoding>
   </general>
   <kdevautoproject>
     <general>
@@ -24,11 +24,11 @@
       <useconfiguration>debug</useconfiguration>
     </general>
     <run>
-      <mainprogram>/home/mjuric/projects/libpeyton/debug</mainprogram>
+      <mainprogram>/home/mjuric/projects/libpeyton/debug/src/libpeytondemo</mainprogram>
       <terminal>true</terminal>
       <directoryradio>executable</directoryradio>
       <customdirectory>/</customdirectory>
-      <programargs>footprint -h</programargs>
+      <programargs></programargs>
       <autocompile>true</autocompile>
       <envvars>
         <envvar value="5" name="all_log_level" />
@@ -38,9 +38,9 @@
       <runarguments>
         <libpeytondemo/>
       </runarguments>
-      <globaldebugarguments/>
-      <globalcwd>/home/mjuric/projects/libpeyton/debug</globalcwd>
-      <useglobalprogram>false</useglobalprogram>
+      <globaldebugarguments></globaldebugarguments>
+      <globalcwd>/home/mjuric/projects/libpeyton/tests</globalcwd>
+      <useglobalprogram>true</useglobalprogram>
       <autoinstall>false</autoinstall>
       <autokdesu>false</autokdesu>
     </run>
@@ -159,7 +159,7 @@
       <includePaths>.;</includePaths>
     </codecompletion>
     <creategettersetter>
-      <prefixGet/>
+      <prefixGet></prefixGet>
       <prefixSet>set</prefixSet>
       <prefixVariable>m_,_</prefixVariable>
       <parameterName>theValue</parameterName>
@@ -202,11 +202,11 @@
   <kdevdebugger>
     <general>
       <programargs/>
-      <gdbpath/>
-      <dbgshell/>
-      <configGdbScript/>
-      <runShellScript/>
-      <runGdbScript/>
+      <gdbpath></gdbpath>
+      <dbgshell></dbgshell>
+      <configGdbScript></configGdbScript>
+      <runShellScript></runShellScript>
+      <runGdbScript></runGdbScript>
       <breakonloadinglibs>true</breakonloadinglibs>
       <separatetty>false</separatetty>
       <floatingtoolbar>false</floatingtoolbar>

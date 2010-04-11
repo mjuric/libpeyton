@@ -10,7 +10,7 @@
 #include <string>
 #include <iostream>
 
-#include <memory.h>
+#include <memory>
 
 namespace peyton {
 

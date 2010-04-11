@@ -118,12 +118,36 @@ void Config::expandVariables(bool allowEnvironmentVariables)
 	util::expand_dict(*this, allowEnvironmentVariables);
 }
 
-void Config::load(const std::string &filename, bool expandVars, bool allowEnvironmentVariables)
+void Config::load(const std::string &filespec, bool expandVars, bool allowEnvironmentVariables)
 {
-	std::ifstream f(filename.c_str());
-	if(!f.good()) { THROW(EFile, "Could not open [" + filename + "] file"); }
+	// split filespec to filename + overrides
+	std::string filename = util::trim(filespec.substr(0, filespec.find('{')));
+	bool have_overrides = filespec.find('{');
 
-	load(f, expandVars);
+	if(filename.size())
+	{
+		std::ifstream f(filename.c_str());
+		if(!f.good()) { THROW(EFile, "Could not open [" + filename + "] file"); }
+
+		// note: if overrides are present, delay variable expansion
+		load(f, !have_overrides & expandVars, allowEnvironmentVariables);
+	}
+
+	// add overrides, if any
+	if(have_overrides)
+	{
+		std::string overrides = util::trim(filespec.substr(filename.size()));	// get the '{ .... }' part
+		if(overrides.size() < 2 || overrides[0] != '{' || overrides[overrides.size()-1] != '}')
+		{
+			THROW(EAny, "Error loading '" + filespec + "': The variables to be overridden must be enclosed in {}");
+		}
+		overrides = overrides.substr(1, overrides.size()-2); 	// remove {}
+		FOREACH(overrides) { if(*i == ';') { *i = '\n'; } }	// replace ; with \n
+
+		// load & expand variables
+		std::istringstream f(overrides);
+		load(f, expandVars, allowEnvironmentVariables);
+	}
 }
 
 Config peyton::system::Config::globals;
