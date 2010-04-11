@@ -63,19 +63,35 @@ void Config::load(std::istream &in, bool expandVars, bool allowEnvironmentVariab
 	//
 
 	do {
-		getline(in, line); lnum++;
+		// load a line, allowing for continuations if '\' is the last character
+		line.clear();
+		int last;
+		do {
+			std::string tmp;
+			getline(in, tmp); lnum++;
+			tmp = util::trim(tmp);
 
+			if(!line.empty()) { line += " "; }
+			line += tmp;
 
+			if(line[0] == '#') { break; }					// comments can't have continuations
 
-		line = Util::trim(line);
-		if(!line.size()) { continue; }
+			if(line.empty() || *line.rbegin() != '\\') { break; }		// line does not end in '\'
+			line.erase(line.size()-1);
+			if(!line.empty() && *line.rbegin() == '\\') { break; }		// line ends in \\
+			line.erase(line.size()-1);
+
+			line = util::trim(line);
+		} while(true);
+
+		if(line[0] == '#') { continue;}			// remove comment
+		if(!line.size()) { continue; }			// empty line
 
 		std::stringstream ss(line);
 		getline(ss, key, '=');
 		key = Util::rtrim(key);
 
 		if(key.find_first_not_of(" \t") == std::string::npos) continue;	// empty line
-		if(key[0] == '#') continue;							// comment
 
 		// check if this is an "array push" key
 		if(key.size() > 2 && key.substr(key.size()-2) == "[]")
