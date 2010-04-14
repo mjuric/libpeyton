@@ -51,6 +51,8 @@ namespace util {
 	inline std::string str(size_t n) { char buf[20]; sprintf(buf, "%d", n); return buf; }
 	/// convert int to std::string
 	inline std::string str(int n) { char buf[20]; sprintf(buf, "%d", n); return buf; }
+	/// convert unsigned int to std::string
+	inline std::string str(unsigned int n) { char buf[20]; sprintf(buf, "%u", n); return buf; }
 	/// convert char to std::string
 	inline std::string str(char c) { char buf[2] = {c, 0}; return buf; }
 	/// convert double to std::string
