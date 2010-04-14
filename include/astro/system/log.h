@@ -49,6 +49,7 @@ public:
 		std::ostringstream &stream();
 	};
 	Log(const std::string &name, int level = exception, bool on = true);
+	~Log();
 	int level(int newlevel = -1);
 	const std::string &identify() { return name; }
 };

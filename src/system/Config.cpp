@@ -18,6 +18,65 @@ using namespace peyton;
 using namespace peyton::system;
 using namespace peyton::exceptions;
 
+std::ostream &peyton::system::operator<<(std::ostream &out, const Config &cfg)
+{
+	FOREACH(cfg)
+	{
+		out << i->first << " = " << i->second << "\n";
+	}
+	return out;
+}
+
+std::istream &peyton::system::operator>>(std::istream &in, Config::filespec &fs)
+{
+	char c;
+	bool eatwhite = true;
+	bool done = false;
+	int curly = 0;
+
+	fs.clear();
+
+	while(in.get(c))
+	{
+		if(done) { break; }
+
+		if(isspace(c))
+		{
+			if(eatwhite) { continue; }
+			if(!curly) { break; }
+		}
+		else
+		{
+			eatwhite = false;
+
+			if(c == '{')
+			{
+				curly++;
+			}
+			else if(c == '}')
+			{
+				if(curly == 1) { done = true; }
+				if(curly > 0) { curly--; }
+			}
+		}
+		
+		fs += c;
+	}
+
+	if(in.eof())
+	{
+		if(!fs.empty())
+		{
+			in.clear();
+		}
+	}
+	else
+	{
+		in.unget();
+	}
+	return in;
+}
+
 #if HAVE_BOOST_REGEX
 size_t Config::get_matching_keys(std::set<std::string> &matches, const std::string &pattern) const
 {
@@ -134,11 +193,11 @@ void Config::expandVariables(bool allowEnvironmentVariables)
 	util::expand_dict(*this, allowEnvironmentVariables);
 }
 
-void Config::load(const std::string &filespec, bool expandVars, bool allowEnvironmentVariables)
+void Config::load(const filespec &fspec, bool expandVars, bool allowEnvironmentVariables)
 {
-	// split filespec to filename + overrides
-	std::string filename = util::trim(filespec.substr(0, filespec.find('{')));
-	bool have_overrides = filespec.find('{');
+	// split fspec to filename + overrides
+	std::string filename = util::trim(fspec.substr(0, fspec.find('{')));
+	bool have_overrides = fspec.find('{') != std::string::npos;
 
 	if(filename.size())
 	{
@@ -152,10 +211,10 @@ void Config::load(const std::string &filespec, bool expandVars, bool allowEnviro
 	// add overrides, if any
 	if(have_overrides)
 	{
-		std::string overrides = util::trim(filespec.substr(filename.size()));	// get the '{ .... }' part
+		std::string overrides = util::trim(fspec.substr(filename.size()));	// get the '{ .... }' part
 		if(overrides.size() < 2 || overrides[0] != '{' || overrides[overrides.size()-1] != '}')
 		{
-			THROW(EAny, "Error loading '" + filespec + "': The variables to be overridden must be enclosed in {}");
+			THROW(EAny, "Error loading '" + fspec + "': The variables to be overridden must be enclosed in {}");
 		}
 		overrides = overrides.substr(1, overrides.size()-2); 	// remove {}
 		FOREACH(overrides) { if(*i == ';') { *i = '\n'; } }	// replace ; with \n
@@ -168,7 +227,7 @@ void Config::load(const std::string &filespec, bool expandVars, bool allowEnviro
 
 Config peyton::system::Config::globals;
 
-Config::Config(const std::string &filename, const std::string &defaults, const bool expandVars, bool allowEnvironmentVariables)
+Config::Config(const filespec &filename, const std::string &defaults, const bool expandVars, bool allowEnvironmentVariables)
 {
 	// source globals, unless this is the globals object itself.
 	if(this != &globals)

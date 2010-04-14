@@ -63,19 +63,19 @@
         <envvars/>
       </optimized>
       <debug>
-        <configargs>--enable-debug=full --with-CCfits=/usr/local --with-CCfits-include=/usr/local/include/CCfits --enable-pch</configargs>
+        <configargs>--enable-debug=full --with-CCfits=/usr/local --with-CCfits-include=/usr/local/include/CCfits --with-boost=/opt/cudatools/2.3/ --enable-pch</configargs>
         <builddir>debug</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevg77options</f77compiler>
         <cxxflags>-O0 -g3</cxxflags>
-        <topsourcedir/>
-        <cppflags/>
-        <ldflags/>
-        <ccompilerbinary/>
-        <cxxcompilerbinary/>
-        <f77compilerbinary/>
-        <cflags/>
+        <topsourcedir></topsourcedir>
+        <cppflags></cppflags>
+        <ldflags></ldflags>
+        <ccompilerbinary></ccompilerbinary>
+        <cxxcompilerbinary></cxxcompilerbinary>
+        <f77compilerbinary></f77compilerbinary>
+        <cflags></cflags>
         <f77flags>-O0 -g3</f77flags>
         <envvars/>
       </debug>

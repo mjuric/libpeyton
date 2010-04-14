@@ -53,6 +53,7 @@ namespace peyton {
 
 			/// read the value of the environment variable
 			operator std::string() const;
+			std::string str() const { return (std::string)(*this); }
 			/// read the value of the environment variable
 			const char *c_str() const;
 			/// set the value of an environment variable, overwriting the former value

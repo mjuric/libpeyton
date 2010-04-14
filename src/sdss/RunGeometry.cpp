@@ -67,7 +67,7 @@ Radians Mask::nuCam[6][2] = {
 
 //extern Preferences pref;
 RunGeometryDB::RunGeometryDB()
-: conf(EnvVar("CONF_SDSS"))
+: conf(EnvVar("CONF_SDSS").str())
 {
 	char buf[1001];
 #if 0

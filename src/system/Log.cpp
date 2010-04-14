@@ -127,6 +127,57 @@ int Log::level(int newlevel)
 	return newlevel;
 }
 
+Log::~Log()
+{
+//	std::cerr << "Destructing " << this << " : " << name << "\n";
+//	std::cerr << "Destructing " << this << "\n";
+}
+
+#if 0
+struct TT
+{
+	std::string name;
+	TT() : name("Meee") {}
+};
+
+template<typename T>
+struct safe_static_object
+{
+	T *&ptr;
+	int refcnt;
+
+	T* operator ->() { return ptr; }
+	const T* operator ->() const { return ptr; }
+
+	safe_static_object(T *&ptr_) : ptr(ptr_)
+	{
+		if(ptr == NULL)
+		{
+			ptr = new T;
+			refcnt = 0;
+			std::cout << this << ": C : Creating inner object\n";
+		}
+		refcnt++;
+		std::cout << this << ": C : refcnt=" << refcnt << "\n";
+	}
+	
+	~safe_static_object()
+	{
+		if(!--refcnt)
+		{
+			delete ptr;
+			ptr = NULL;
+			std::cout << this << ": C : Deleting inner object\n";
+		}
+		std::cout << this << ": D : refcnt=" << refcnt << "\n";
+	}
+};
+
+static TT *tt_obj = NULL;
+static TT *tt_ref = 0;
+safe_static_object<TT> tt(tt_obj);
+#endif
+
 Log::Log(const std::string &n, int level, bool on)
 : name(n), logLevel(level), loggingOn(on), output(NULL)
 {

@@ -8,6 +8,8 @@
 #include <set>
 #include <cstdlib>
 
+#include "astro/util.h"
+
 namespace peyton {
 namespace system {
 
@@ -83,6 +85,19 @@ var4 = To expand a key with spaces, enclose it in curly braces, eg ${key with sp
 
 			Variant(const std::string &s = "") : std::string(s) {}
 		};
+
+	public:
+		class filespec : public std::string
+		{
+		public:
+			filespec() {}
+			filespec(const std::string &s) : std::string(s) {}
+			filespec(const char *s) : std::string(s) {}
+			filespec(const filespec &s) : std::string(s) {}
+			filespec& operator=(const filespec &a) { *this = (std::string&)a; return *this; }
+		};
+		//typedef std::string filespec;
+
 	public:
 		// Global definitions that will be present in _every_ (subsequently loaded) Config object
 		static Config globals;
@@ -102,18 +117,18 @@ var4 = To expand a key with spaces, enclose it in curly braces, eg ${key with sp
 
 			@throws peyton::exceptions::EAny		Throws an EAny exception in case anything goes wrong
 		*/
-		Config(const std::string &filename = "", const std::string &defaults = "", bool expandVars = true, bool allowEnvironmentVariables = true);
+		Config(const filespec &fspec = "", const std::string &defaults = "", bool expandVars = true, bool allowEnvironmentVariables = true);
 
 		/**
 			Loads configuration from file, optionally expanding the variables referenced in the values.
 
-			@param filename		Path to the config file (eg. /home/joe/x.conf)
+			@param fspec			Path to the config file (eg. /home/joe/x.conf)
 			@param expandVars		Should the variables in the file be automatically expanded
 			@param allowEnvironmentVariables		If variable to be expanded cannot be found in the file, should it be searched in the environment.
 			
 			@throws peyton::exceptions::EAny		Throws an EAny exception in case anything goes wrong
 		*/
-		void load(const std::string &filename, bool expandVars = true, bool allowEnvironmentVariables = true);
+		void load(const filespec &filename, bool expandVars = true, bool allowEnvironmentVariables = true);
 
 		/**
 			Loads configuration from stream, optionally expanding the variables referenced in the values.
@@ -209,6 +224,9 @@ string z = config["string_value"];
 		}
 		return v.size();
 	}
+
+	ISTREAM(Config::filespec &fs);
+	OSTREAM(const Config &fs);
 }
 }
 
