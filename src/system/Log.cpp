@@ -29,13 +29,13 @@ LOG_DEFINE(message, verb1, true);
 /* Obtain a backtrace and print it to stdout. */
 void peyton::system::print_trace()
 {
-	void *array[10];
+	void *array[15];
 	size_t size;
 	char **strings;
 	size_t i;
 
-	size = backtrace(array, 10);
-	MLOG(error) << "Obtained " << size << " stack frames.";
+	size = backtrace(array, 15);
+//	MLOG(error) << "Obtained " << size << " stack frames.";
 #if 0
 	strings = backtrace_symbols(array, size);
 
@@ -55,7 +55,7 @@ void peyton::system::print_trace()
 	const char *symname;
 	char *demangled;
 
-	for (int i=0; i<size; ++i)
+	for (int i=1; i<size; ++i)
 	{
 		if(!dladdr(array[i], &dlinfo))
 			continue;
@@ -68,7 +68,7 @@ void peyton::system::print_trace()
 
 //		printf("object: %s, function: %s\n", dlinfo.dli_fname, symname);
 		if(symname == NULL) { symname = "null"; }
-		MLOG(error) << dlinfo.dli_fname << '(' << symname << ')';
+		std::cerr << "  #" << i << ": " << symname << "\n";// << " [" << dlinfo.dli_fname << "]";
 
 		if (demangled)
 			free(demangled);
@@ -330,13 +330,13 @@ std::ostringstream &Log::linestream::stream()
 
 bool peyton::system::assert_msg_abort()
 {
+	std::cerr << "\nStack Trace:\n";
+	peyton::system::print_trace();
 	std::cerr << "\n";
 	std::cerr << "##############################################################################\n";
 	std::cerr << "# Dump complete.\n";
 	std::cerr << "##############################################################################\n";
-	std::cerr << "\n\nStack Trace:";
-	peyton::system::print_trace();
-	std::cerr << "\n\n\n";
+	std::cerr << "\n";
 	abort();
 }
 
