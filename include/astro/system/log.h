@@ -2,7 +2,8 @@
 #define _astro_log_h
 
 #include <sstream>
-#include <assert.h>
+#include <cassert>
+#include <astro/assert.h>
 
 namespace peyton {
 namespace system {
@@ -29,13 +30,6 @@ protected:
 	int logLevel;
 	bool loggingOn;
 public:
-#if 0
-	void write(const char *text, ...);
-	void debug(int level, const char *text, ...);
-
-	std::ostream &stream_begin();
-	void stream_end();
-#endif
 	enum { terminate=-2, error, exception, verb1, verb2, verb3, verb4, verb5 };
 
 public:
@@ -62,6 +56,9 @@ namespace logs
 	extern Log message; ///< predefined log for general application messages -- to be used through MLOG macro
 }
 
+} // namespace system
+} // namespace peyton
+
 //	namespace peyton { namespace system { namespace logs { 
 
 #define LOG_DECLARE(name) \
@@ -86,27 +83,6 @@ namespace logs
 	if(peyton::system::logs::message.level() >= peyton::system::Log::lev) \
 		peyton::system::Log::linestream(peyton::system::logs::message, peyton::system::Log::lev, __PRETTY_FUNCTION__).stream()
 
-/**
-	\brief		This function is only to be used through ASSERT() macro
-*/
-bool assert_msg_message(const char *assertion, const char *func, const char *file, int line);
-bool assert_msg_abort();
-
-}
-}
-
-#if defined(__GNUG__) || defined (__INTEL_COMPILER)
-#define ASSERT(cond) \
-	for(bool __nuke = !(cond); __nuke && peyton::system::assert_msg_message(#cond, __PRETTY_FUNCTION__, __FILE__, __LINE__); peyton::system::assert_msg_abort())
-#else
-#define ASSERT(cond) \
-	for(bool __nuke = !(cond); __nuke && peyton::system::assert_msg_message(#cond, "<function_name_unsupported>"_, __FILE__, __LINE__); peyton::system::assert_msg_abort())
-#endif
-
-#define ERRCHECK(condition) if(condition)
-//#define ASSERT(cond) assert(cond)
-
-//	if(!(cond)) { DEBUG(terminate, "Assertion [" #cond "] failed at " << __PRETTY_FUNCTION__ << ", " << __FILE__ << ":" << __LINE__); abort(); }
 
 #define __peyton_system peyton::system
 
