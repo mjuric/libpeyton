@@ -21,8 +21,6 @@
 #ifndef binarystream_h__
 #define binarystream_h__
 
-#ifdef HAVE_BOOST_IOSTREAMS
-
 #include <iostream>
 #include <algorithm>
 #include <vector>
@@ -450,7 +448,5 @@ namespace io {
 
 } // namespace io
 } // namespace peyton
-
-#endif // HAVE_BOOST_IOSTREAMS
 
 #endif // binarystream_h__

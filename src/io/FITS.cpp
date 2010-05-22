@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+#include <peyton_config.h>
 
 #ifdef HAVE_PKG_CCfits
 

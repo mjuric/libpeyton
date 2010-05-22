@@ -1,7 +1,3 @@
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <astro/sdss/photometry.h>
 #include <astro/exceptions.h>
 #include <astro/system/options.h>

@@ -18,9 +18,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "config.h"
- 
-#ifdef HAVE_BOOST_IOSTREAMS
+#include "peyton_config.h"
 
 #include <astro/io/binarystream.h>
 #include <astro/util.h>
@@ -147,15 +145,3 @@ void demo_binarystream_with_boost_iostreams()
 	FOR(0, w.size()) { std::cout << w[i] << " "; } std::cout << "\n";
 }
 #endif
-
-#else // HAVE_BOOST_IOSTREAMS
-
-#include <iostream>
-
-int demo_binarystream()
-{
-	std::cerr << "Boost.Iostream support not compiled in.";
-	return -1;
-}
-
-#endif // HAVE_BOOST_IOSTREAMS

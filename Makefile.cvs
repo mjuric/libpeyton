@@ -1,9 +1,0 @@
-default: all
-
-all:
-	./cvs-post-checkout.sh
-	aclocal
-	autoheader
-	automake
-	autoconf
-

@@ -201,12 +201,11 @@ string z = config["string_value"];
 		const Variant get_any_of(const std::string &s1, const std::string &s2, const std::string &s3) const { return get_any_of(3, s1.c_str(), s2.c_str(), s3.c_str()); }
 		const Variant get_any_of(const std::string &s1, const std::string &s2, const std::string &s3, const std::string &s4) const { return get_any_of(4, s1.c_str(), s2.c_str(), s3.c_str(), s4.c_str()); }
 
-#if HAVE_BOOST_REGEX
 		// return all keys matching a given regular expression pattern pat. Note that the method
 		// does _not_ clear the matches set before populating it. Returns the number of matches
 		// found.
 		size_t get_matching_keys(std::set<std::string> &matches, const std::string &pat) const;
-#endif
+
 		// copies all keyvals with keys beginning with prefix to dest, possibly stripping
 		// the prefix if requested (default=yes). Returns the number of keyvals copied.
 		int get_subset(Config &dest, const std::string &prefix, bool strip_prefix = true);

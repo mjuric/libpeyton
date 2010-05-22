@@ -1,4 +1,4 @@
-#include "config.h"
+#include <peyton_config.h>
 
 #include <astro/system/config.h>
 #include <astro/util.h>
@@ -10,9 +10,7 @@
 #include <sstream>
 #include <fstream>
 
-#if HAVE_BOOST_REGEX
 #include <boost/regex.hpp>
-#endif
 
 using namespace peyton;
 using namespace peyton::system;
@@ -77,7 +75,6 @@ std::istream &peyton::system::operator>>(std::istream &in, Config::filespec &fs)
 	return in;
 }
 
-#if HAVE_BOOST_REGEX
 size_t Config::get_matching_keys(std::set<std::string> &matches, const std::string &pattern) const
 {
 	boost::regex pat(pattern);
@@ -93,7 +90,6 @@ size_t Config::get_matching_keys(std::set<std::string> &matches, const std::stri
 	}
 	return count;
 }
-#endif
 
 int Config::get_subset(Config &dest, const std::string &prefix, bool strip_prefix)
 {
