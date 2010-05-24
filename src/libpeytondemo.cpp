@@ -1,10 +1,11 @@
 #include <astro/sdss/photometry.h>
 #include <astro/exceptions.h>
 #include <astro/system/options.h>
-#include <iostream>
 
+#include <iostream>
 #include <astro/math.h>
 #include <astro/util.h>
+#include <astro/version.h>
 #include <astro/useall.h>
 using namespace std;
 
@@ -97,6 +98,7 @@ int config_overrides_test()
 
 int main(int argc, char *argv[])
 {
+	std::cerr << "version libpeyton-" << peyton::version_string() << "\n";
 	//return 0;
 	//moduloTest(); return 0;
 

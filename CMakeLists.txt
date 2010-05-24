@@ -2,6 +2,22 @@ cmake_minimum_required(VERSION 2.8)
 project(peyton)
 
 #
+# git-based automatic versioning
+#
+add_custom_target(
+  version-gen
+  COMMAND "${PROJECT_SOURCE_DIR}/git-version-gen" "${PROJECT_BINARY_DIR}/astro/peyton_version.h" "${PROJECT_SOURCE_DIR}/.version"
+  COMMENT "Generating version information"
+)
+execute_process(
+  COMMAND "${PROJECT_SOURCE_DIR}/git-version-gen" "${PROJECT_BINARY_DIR}/astro/peyton_version.h" "${PROJECT_SOURCE_DIR}/.version"
+)
+
+install (FILES
+  "${PROJECT_BINARY_DIR}/astro/peyton_version.h"
+DESTINATION include/astro)
+
+#
 # Check requirements
 #
 include (${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
@@ -23,6 +39,7 @@ include_directories("${PROJECT_BINARY_DIR}")
 include_directories(include)
 add_library(peyton SHARED
 
+  src/Version.cpp
   src/Coordinates.cpp
   src/Util.cpp
   src/Time.cpp
@@ -68,6 +85,7 @@ add_library(peyton SHARED
   src/ui/ticker.cpp
 
 )
+add_dependencies(peyton version-gen)
 
 #
 # demo executables
@@ -84,6 +102,7 @@ install (TARGETS peyton DESTINATION lib)
 install (TARGETS libpeytondemo DESTINATION bin)
 
 install (FILES
+  include/astro/version.h
   include/astro/assert.h
   include/astro/constants.h
   include/astro/coordinates.h
@@ -192,15 +211,39 @@ DESTINATION include/astro/util)
 
 #
 # package creation info
+#   - this generates a "dist" target to create binary and source packages
 #
+
+execute_process(
+  COMMAND "${PROJECT_SOURCE_DIR}/git-untracked-files" "${PROJECT_SOURCE_DIR}"
+  OUTPUT_VARIABLE CPACK_IGNORE_FILES
+)
+
+add_custom_target(dist
+	rm -f CPackConfig.make CPackSourceConfig.make &&
+	cmake "${CMAKE_CURRENT_SOURCE_DIR}" &&
+	make package_source &&
+	make package
+)
+
+file(READ "${PROJECT_SOURCE_DIR}/.version" VLIST)
+STRING(REGEX MATCHALL "[^ ]+" VLIST ${VLIST})
+list(GET VLIST 0 CPACK_PACKAGE_FILE_NAME)
+list(GET VLIST 1 CPACK_PACKAGE_VERSION_MAJOR)
+list(GET VLIST 2 CPACK_PACKAGE_VERSION_MINOR)
+list(GET VLIST 3 CPACK_PACKAGE_VERSION_PATCH)
+list(GET VLIST 4 CPACK_RPM_PACKAGE_RELEASE)
+file(READ "${PROJECT_SOURCE_DIR}/.version.fn" FULL_VERSION)
 
 include (InstallRequiredSystemLibraries)
 set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
-set (CPACK_PACKAGE_VERSION_MAJOR "0")
-set (CPACK_PACKAGE_VERSION_MINOR "1")
-set (CPACK_PACKAGE_VERSION_PATCH "0")
+set (CPACK_GENERATOR "TBZ2")
+set (CPACK_SOURCE_GENERATOR "TBZ2")
 set (CPACK_PACKAGE_DESCRIPTION_SUMMARY "libpeyton - a library of routines for astronomy and astrophysics")
 set (CPACK_PACKAGE_DEFAULT_LOCATION "/usr")
 set (CPACK_PACKAGE_VENDOR "Mario Juric")
 set (CPACK_PACKAGE_CONTACT "Mario Juric <mjuric@ias.edu>")
+set (CPACK_PACKAGE_FILE_NAME "libpeyton-${FULL_VERSION}.bin")
+set (CPACK_SOURCE_PACKAGE_FILE_NAME "libpeyton-${FULL_VERSION}")
+set (CPACK_SOURCE_IGNORE_FILES ${CPACK_IGNORE_FILES})
 include (CPack)

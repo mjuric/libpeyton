@@ -33,3 +33,7 @@ DEADJOE
 Doxyfile
 optimized
 debug
+build
+.cpackignore
+.version
+.version.fn

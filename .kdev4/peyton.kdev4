@@ -7,7 +7,7 @@ CMakeDir=/usr/share/cmake-2.8/Modules
 Current CMake Binary=file:///usr/bin/cmake
 CurrentBuildDir=file:///home/mjuric/projects/libpeyton/Debug
 CurrentBuildType=Debug
-CurrentInstallDir=file:///usr/local
+CurrentInstallDir=file:///tmp/peyton
 ProjectRootRelative=./
 
 [Launch]
