@@ -70,7 +70,10 @@ test -x ./configure && {
 	BDSET=1
 
 	echo "=== configure: Build directory is '$BUILDDIR'"
-} || SOURCEDIR=`dirname $0`
+} || {
+	BUILDDIR="."
+	SOURCEDIR=`dirname $0`
+}
 
 # Assume all extra arguments are CMAKE variable definitions
 for arg do
@@ -95,5 +98,5 @@ all:
 	@ cd $BUILDDIR && \$(MAKE) \$@
 EOT
 	fi;
-	echo "=== configure: Source configured. Run make to build the package"
+	echo "=== configure: Source configured in directory '$BUILDDIR'. Run \`make' to compile."
 }
