@@ -93,6 +93,9 @@ $CMAKE && {
 		cat > ../Makefile <<EOT
 all:
 
+tidy:
+	@ rm -rf $BUILDDIR
+
 %:
 	@ test -f $BUILDDIR/Makefile || { echo "$BUILDDIR directory not configured. Run configure first." && false; }
 	@ cd $BUILDDIR && \$(MAKE) \$@
