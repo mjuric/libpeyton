@@ -184,6 +184,21 @@ void peyton::io::format_type(Formatter &f, const unsigned &x)
 	}
 }
 
+void peyton::io::format_type(Formatter &f, const long unsigned &x)
+{
+	char *c; int n;
+	if(unsigned_formats.find(f.tf.conversion) != string::npos)
+	{
+		asprintf(&c, f.front().c_str(), x);
+		f.stream() << c;
+		free(c);
+	}
+	else
+	{
+		THROW(EIOFormat, "Error in format string - [" + f.front() + "] format requested for an unsigned integer");
+	}
+}
+
 void peyton::io::format_type(Formatter &f, const double &x)
 {
 	char *c; int n;

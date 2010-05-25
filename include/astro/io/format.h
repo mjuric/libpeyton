@@ -238,6 +238,7 @@ inline void format_type(Formatter &f, const T &v)
 //
 void format_type(Formatter &f, const int &x);
 void format_type(Formatter &f, const unsigned &x);
+void format_type(Formatter &f, const long unsigned &x);
 void format_type(Formatter &f, const double &x);
 void format_type(Formatter &f, const char &x);
 void format_type(Formatter &f, const bool &x);
