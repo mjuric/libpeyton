@@ -16,7 +16,7 @@ test "x$1" != "x" && cd "$1"
 
 { which git 2>&1 > /dev/null && test -d .git; } || { test -f .cpackignore && cat .cpackignore && exit; } || exit -1;
 
-echo -n '\\.git;' > .cpackignore
+echo -n '/\\.git;' | tee -a .cpackignore
 git clean -ndx | grep "Would remove" | cut -b 14- \
 	| sed '/^.cpackignore$/d' \
 	| sed '/^.version$/d' \
