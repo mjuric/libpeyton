@@ -44,7 +44,7 @@ if which git 2>&1 > /dev/null && git rev-parse --git-dir > /dev/null 2>&1; then
 	fi
 
 	DIFFSHA=`git diff | sha1sum | cut -b 1-8`
-	if [ "$DIFFSHA" == "da39a3ee5e6b4b0d3255bfef95601890afd80709" ]; then
+	if [ "$DIFFSHA" == "da39a3ee" ]; then  # first 8 characters of an empty string hash
 		VLIST[5]=0
 	else
 		VLIST[5]=1
