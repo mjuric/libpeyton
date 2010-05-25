@@ -16,6 +16,7 @@ cat <<-EOF
 	   --prefix=<prefix>		# will install the code into <prefix>
 	   --optimized			# configure the 'Release' build
 	   --debug			# configure the 'Debug' build
+	   --with-boost=<boost_root>	# use boost from <boost_root> directory
 
 	If ran from the top level source directory, it will configure the build
 	directory in build/optimized/debug (depending on whether --optimized or
@@ -32,7 +33,7 @@ CMAKE="cmake"
 
 BUILDDIR='build'
 
-TEMP=`getopt -o hp: -l help,prefix:,debug,optimized -- "$@"` || { echo "Try $0 --help"; exit $?; }
+TEMP=`getopt -o hp: -l help,prefix:,debug,optimized,with-boost: -- "$@"` || { echo "Try $0 --help"; exit $?; }
 
 eval set -- "$TEMP"
 while true ; do
@@ -51,6 +52,10 @@ while true ; do
 			BUILDDIR='optimized'
 			CMAKE="$CMAKE -DCMAKE_BUILD_TYPE='Release'"
 			shift 1 ;;
+		--with-boost)
+			echo "=== configure: Using Boost from '$2'"
+			CMAKE="$CMAKE -DBOOST_ROOT='$2'"
+			shift 2 ;;
 		-h|--help)
 			usage;
 			exit 0 ;;
@@ -86,7 +91,7 @@ test -f CMakeCache.txt && rm -f CMakeCache.txt
 
 # Run cmake
 echo "=== Invoking CMake to configure the source"
-$CMAKE && {
+eval $CMAKE && {
 	if [ "$BDSET" == "1" ]; then
 		# Generate a stub makefile that will hand-off compilation to the real makefile
 		# This happens only when configure is run in-source
