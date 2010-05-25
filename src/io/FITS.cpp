@@ -15,7 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <peyton_config.h>
+#include <astro/peyton_config.h>
 
 #ifdef HAVE_PKG_CCfits
 

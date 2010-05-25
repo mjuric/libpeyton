@@ -18,7 +18,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "peyton_config.h"
+#include <astro/peyton_config.h>
 
 #include <astro/io/binarystream.h>
 #include <astro/util.h>

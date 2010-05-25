@@ -6,15 +6,15 @@ project(peyton)
 #
 add_custom_target(
   version-gen
-  COMMAND "${PROJECT_SOURCE_DIR}/git-version-gen" "${PROJECT_BINARY_DIR}/astro/peyton_version.h" "${PROJECT_SOURCE_DIR}/.version"
+  COMMAND "${PROJECT_SOURCE_DIR}/git-version-gen" "${PROJECT_BINARY_DIR}/include/astro/peyton_version.h" "${PROJECT_SOURCE_DIR}/.version"
   COMMENT "Generating version information"
 )
 execute_process(
-  COMMAND "${PROJECT_SOURCE_DIR}/git-version-gen" "${PROJECT_BINARY_DIR}/astro/peyton_version.h" "${PROJECT_SOURCE_DIR}/.version"
+  COMMAND "${PROJECT_SOURCE_DIR}/git-version-gen" "${PROJECT_BINARY_DIR}/include/astro/peyton_version.h" "${PROJECT_SOURCE_DIR}/.version"
 )
 
 install (FILES
-  "${PROJECT_BINARY_DIR}/astro/peyton_version.h"
+  "${PROJECT_BINARY_DIR}/include/astro/peyton_version.h"
 DESTINATION include/astro)
 
 #
@@ -29,9 +29,9 @@ include_directories(${Boost_INCLUDE_DIRS})
 # configure a header file to pass some of the CMake settings to the source code
 configure_file(
   "${PROJECT_SOURCE_DIR}/peyton_config.h.in"
-  "${PROJECT_BINARY_DIR}/peyton_config.h"
+  "${PROJECT_BINARY_DIR}/include/astro/peyton_config.h"
 )
-include_directories("${PROJECT_BINARY_DIR}")
+include_directories("${PROJECT_BINARY_DIR}/include")
 
 #
 # libpeyton library definitions

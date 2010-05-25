@@ -1,4 +1,4 @@
-#include <peyton_config.h>
+#include <astro/peyton_config.h>
 
 #include <astro/system/config.h>
 #include <astro/util.h>

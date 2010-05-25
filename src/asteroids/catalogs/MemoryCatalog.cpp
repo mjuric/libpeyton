@@ -1,4 +1,4 @@
-#include <peyton_config.h>
+#include <astro/peyton_config.h>
 
 #if defined(HAVE_FMEMOPEN)
 
