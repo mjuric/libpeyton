@@ -99,7 +99,7 @@ target_link_libraries(libpeytondemo ${EXTRA_LIBS})
 # install info
 #
 install (TARGETS peyton DESTINATION lib)
-install (TARGETS libpeytondemo DESTINATION bin)
+#install (TARGETS libpeytondemo DESTINATION bin)
 
 install (FILES
   include/astro/version.h

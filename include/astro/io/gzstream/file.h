@@ -31,6 +31,8 @@
 # include <astro/io/gzstream/compat.h>
 #endif
 
+#include <cstdio>
+
 /** @file   file.h
     @author Christian Holm
     @date   Tue Oct  8 12:57:03 2002

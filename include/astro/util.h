@@ -50,7 +50,7 @@ namespace util {
 	/// convert unsigned long long to std::string
 	inline std::string str(unsigned long long n) { char buf[20]; sprintf(buf, "%llu", n); return buf; }
 	/// convert unsigned long int to std::string
-	inline std::string str(unsigned long int n) { char buf[20]; sprintf(buf, "%llu", n); return buf; }
+	inline std::string str(unsigned long int n) { char buf[20]; sprintf(buf, "%lu", n); return buf; }
 	/// convert int to std::string
 	inline std::string str(int n) { char buf[20]; sprintf(buf, "%d", n); return buf; }
 	/// convert unsigned int to std::string
