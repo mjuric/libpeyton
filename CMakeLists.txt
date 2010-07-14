@@ -23,7 +23,7 @@ DESTINATION include/astro)
 include (${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
 check_function_exists(fmemopen HAVE_FMEMOPEN)
 
-find_package(Boost REQUIRED COMPONENTS regex )
+find_package(Boost REQUIRED COMPONENTS regex program_options )
 include_directories(${Boost_INCLUDE_DIRS})
 
 # configure a header file to pass some of the CMake settings to the source code

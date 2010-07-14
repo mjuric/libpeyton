@@ -1,11 +1,11 @@
 [Buildset]
-BuildItems=@Variant(\x00\x00\x00\t\x00\x00\x00\x00\x01\x00\x00\x00\x0b\x00\x00\x00\x00\x01\x00\x00\x00\x0c\x00p\x00e\x00y\x00t\x00o\x00n)
+BuildItems=@Variant(\x00\x00\x00\t\x00\x00\x00\x00\x00)
 
 [CMake]
-BuildDirs[$e]=$HOME/projects/libpeyton/Release,$HOME/projects/libpeyton/Debug
+BuildDirs[$e]=$HOME/projects/libpeyton/optimized,$HOME/projects/libpeyton/debug
 CMakeDir=/usr/share/cmake-2.8/Modules
 Current CMake Binary=file:///usr/bin/cmake
-CurrentBuildDir=file:///home/mjuric/projects/libpeyton/Debug
+CurrentBuildDir=file:///home/mjuric/projects/libpeyton/debug
 CurrentBuildType=Debug
 CurrentInstallDir=file:///tmp/peyton
 ProjectRootRelative=./
@@ -23,7 +23,7 @@ Type=Native Application
 Arguments=
 Dependencies=@Variant(\x00\x00\x00\t\x00\x00\x00\x00\x00)
 Dependency Action=Build
-EnvironmentGroup=default
+EnvironmentGroup=cuda 2.3
 Project Target=peyton,libpeytondemo
 Working Directory=
 isExecutable=false

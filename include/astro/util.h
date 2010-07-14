@@ -4,6 +4,7 @@
 #include <astro/macros.h>
 #include <astro/types.h>
 #include <astro/constants.h>
+#include <astro/util/ranges.h>
 #include <cmath>
 #include <string>
 #include <memory.h>
