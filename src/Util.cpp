@@ -18,6 +18,10 @@
 
 using namespace peyton;
 
+util::interval_special peyton::util::ALL;
+util::interval_MAX     peyton::util::MAX;
+util::interval_MIN     peyton::util::MIN;
+
 Radians
 util::approxSunLongitude(MJD time)
 {
