@@ -86,6 +86,7 @@ add_library(peyton SHARED
 
 )
 add_dependencies(peyton version-gen)
+target_link_libraries(peyton ${Boost_LIBRARIES})
 
 #
 # demo executables

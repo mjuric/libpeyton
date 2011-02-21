@@ -15,6 +15,8 @@
 	data. fmemopen is then used to emulate FILE* access to that location.
 */
 
+#if defined(HAVE_FMEMOPEN)
+
 namespace peyton {
 namespace asteroids {
 
@@ -29,5 +31,7 @@ public:
 
 }
 }
+
+#endif
 
 #endif

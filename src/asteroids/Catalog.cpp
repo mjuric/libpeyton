@@ -25,8 +25,10 @@ Catalog *Catalog::open(const char *filename, const char *type, const char *mode)
 		cat = new BowellCatalog;
 	} else if(!stricmp(type, "NATIVE")) {
 		cat = new NativeCatalog;
+#if defined(HAVE_FMEMOPEN)
 	} else if(!stricmp(type, "NATIVE-MEMORY")) {
 		cat = new MemoryCatalog;
+#endif
 	} else {
 		THROW(ECatalogTypeUnknown, "Catalog type unknown");
 		return NULL;
