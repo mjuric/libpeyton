@@ -162,6 +162,8 @@ namespace peyton
 
 			iterator begin() const { return iterator(x0, dx); }
 			iterator end() const { return iterator(x1, dx); }
+			
+			T width() const { return x1 - x0; }
 
 			bool ge_end(const iterator &i) const
 			{
