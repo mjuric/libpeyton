@@ -119,7 +119,7 @@ namespace opt
 		bool isset;
 		binding(T &v) : var(v), isset(false) { }
 
-		virtual std::string type() const			{ return type_name(var); }
+		virtual std::string type() const			{ return peyton::util::type_name(var); }
 		virtual std::istream &setval(std::istream &in)		{ isset = in >> var; return in; }
 		virtual std::ostream &getval(std::ostream &out) const	{ return out << var; }
 		virtual binding *clone() const				{ return new binding<T>(*this); }
@@ -200,7 +200,7 @@ namespace opt
 		bool isset;
 		binding(std::vector<T> &v) : var(v), isset(false) { }
 
-		virtual std::string type() const			{ return type_name(var); }
+		virtual std::string type() const			{ return peyton::util::type_name(var); }
 		virtual std::istream &setval(std::istream &in)
 		{
 			T val;
